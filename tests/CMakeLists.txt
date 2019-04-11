@@ -8,13 +8,13 @@ INCLUDE_DIRECTORIES(
 # ADD_EXECUTABLE(program_test program_test.cc )
 # TARGET_LINK_LIBRARIES(program_test ${LEMON_LIBRARIES} )
 
-#ADD_EXECUTABLE(test_179 test_179.cc)
-#TARGET_LINK_LIBRARIES(test_179 ${LEMON_LIBRARIES} )
+ADD_EXECUTABLE(test_222 test_222.cc)
+TARGET_LINK_LIBRARIES(test_222 ${LEMON_LIBRARIES} )
 
 # we keep an executable because it is easier to track the origin of exceptions using GDB.
 # Must be built manually to limit default build time
-ADD_EXECUTABLE(test_cc EXCLUDE_FROM_ALL cc/test_cc.cc )
-TARGET_LINK_LIBRARIES(test_cc ${LEMON_LIBRARIES} )
+#ADD_EXECUTABLE(test_cc EXCLUDE_FROM_ALL cc/test_cc.cc )
+#TARGET_LINK_LIBRARIES(test_cc ${LEMON_LIBRARIES} )
 
 
 # create output directory for test outputs

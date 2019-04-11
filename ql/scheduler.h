@@ -123,7 +123,7 @@ public:
         weight[arc] = std::ceil( static_cast<float>(instruction[srcNode]->duration) / cycle_time);
         cause[arc] = operand;
         depType[arc] = deptype;
-        DOUT("... dep " << name[srcNode] << " -> " << name[tgtNode] << " (opnd=" << operand << ", dep=" << DepTypesNames[deptype] << ")");
+        DOUT("... dep " << name[srcNode] << " -> " << name[tgtNode] << " (opnd=" << operand << ", dep=" << DepTypesNames[deptype] << ", weight=" << weight[arc] << ")");
     }
 
     // fill the dependence graph ('graph') with nodes from the circuit and adding arcs for their dependences
