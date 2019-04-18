@@ -439,6 +439,17 @@ arg2 : int
     duration in ns
 """
 
+
+%feature("docstring") Kernel::barrier
+""" inserts a barrier on specified qubits. This is equivalent to wait on specified qubits with '0' duration.
+
+Parameters
+----------
+arg1 : []
+    list of qubits
+"""
+
+
 %feature("docstring") Kernel::display
 """ inserts QX display instruction (so QX specific).
 

@@ -183,6 +183,43 @@ class Test_wait(unittest.TestCase):
         gold_fn = rootDir + '/golden/test_barrier.qisa'
         self.assertTrue(file_compare(QISA_fn, gold_fn))
 
+    def test_wait_barrier_222(self):
+
+        ql.set_option('scheduler', 'ALAP')
+        config_fn = os.path.join(curdir, 'hardware_config_cc_light.json')
+        platform = ql.Platform('seven_qubits_chip', config_fn)
+        sweep_points = [1]
+        num_qubits = platform.get_qubit_number()
+        p = ql.Program('test_wait_barrier_222', platform, num_qubits)
+        p.set_sweep_points(sweep_points, len(sweep_points))
+
+        k = ql.Kernel('aKernel', platform, num_qubits)
+
+        x, xN, xE, xW, xS, z = 0, 1, 2, 3, 4, 5 
+
+        k.gate('ry90', [x])
+        k.gate('ry90', [xN])
+        k.gate('ry90', [xE])
+        k.gate('ry90', [xW])
+        k.gate('ry90', [xS])
+        k.gate('barrier', [x, xN, xE, xW, xS])
+        # which is same as:
+        # k.gate('wait', [x, xN, xE, xW, xS], 0)
+
+        k.gate('measure', [x])
+        k.gate('barrier', [x])
+        # which is same as:
+        # k.gate('wait', [x], 0)
+
+        k.gate('rx90', [z])
+
+        p.add_kernel(k)
+        p.compile()
+
+        # QISA_fn = os.path.join(output_dir, p.name+'.qisa')
+        # gold_fn = rootDir + '/golden/test_barrier.qisa'
+        # self.assertTrue(file_compare(QISA_fn, gold_fn))
+
 
 if __name__ == '__main__':
     unittest.main()

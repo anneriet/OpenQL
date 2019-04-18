@@ -543,7 +543,8 @@ public:
             else if (
                     // or is a Control Unitary in general
                     // Read on all operands, Write on last operand
-                    // before implementing it, check whether all commutativity on Reads above hold for this Control Unitary
+                    // before implementing it, check whether all commutativity on Reads above
+                    // hold for this Control Unitary
                     )
             {
                 DOUT(". considering " << name[consNode] << " as Control Unitary");
