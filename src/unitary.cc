@@ -8,8 +8,8 @@
 
 #include <unitary.h>
 
-#include <Eigen/MatrixFunctions>
-#include <src/misc/lapacke.h>
+#include <unsupported/Eigen/MatrixFunctions>
+// #include <src/misc/lapacke.h>
 
 #include <chrono>
 
