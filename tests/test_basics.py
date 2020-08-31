@@ -1,7 +1,7 @@
 from openql import openql as ql
 import unittest
 import os
-from test_QASM_assembler_present import assemble
+from test_QASM_assembler_present import assemble, assembler_present
 
 curdir = os.path.dirname(__file__)
 output_dir = os.path.join(curdir, 'test_output')
@@ -22,6 +22,7 @@ class Test_basic(unittest.TestCase):
 
 
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_compilation(self):
 
         print('output dir : {}'.format( ql.get_option('output_dir') ) )
@@ -53,8 +54,8 @@ class Test_basic(unittest.TestCase):
         
         # load qasm
         qasm_files = []
-        qasm_files.append(os.path.join(output_dir, 'basic.qasm'))
-        qasm_files.append(os.path.join(output_dir, 'basic_scheduled.qasm'))
+        qasm_files.append(os.path.join(output_dir, 'basic_initialqasmwriter_out.qasm'))
+        qasm_files.append(os.path.join(output_dir, 'basic_scheduledqasmwriter_out.qasm'))
 
         for qasm_file in qasm_files:
             print('assembling: {}'.format(qasm_file))

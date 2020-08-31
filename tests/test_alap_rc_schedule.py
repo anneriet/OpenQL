@@ -1,6 +1,6 @@
 from openql import openql as ql
 import os
-from test_QISA_assembler_present import assemble
+from test_QISA_assembler_present import assemble, assembler_present
 import unittest
 from utils import file_compare
 
@@ -17,8 +17,11 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
     def setUp(self):
         ql.set_option('scheduler', self._SCHEDULER)
         ql.set_option('output_dir', output_dir)
+        ql.set_option('log_level', "LOG_NOTHING")
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_qwg(self):
+        self.setUp()
         # parameters
         v = 'qwg'
 
@@ -43,7 +46,9 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
         assemble(QISA_fn)
         self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_qwg2(self):
+        self.setUp()
         # parameters
         v = 'qwg2'
         scheduler = self._SCHEDULER
@@ -78,7 +83,9 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
         assemble(QISA_fn)
         self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_issue179(self):
+        self.setUp()
         # parameters
         v = 'issue179'
         scheduler = self._SCHEDULER
@@ -115,7 +122,9 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
         assemble(QISA_fn)
         self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_edge(self):
+        self.setUp()
         # parameters
         v = 'edge'
         scheduler = self._SCHEDULER
@@ -143,7 +152,9 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
         assemble(QISA_fn)
         self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_detuned(self):
+        self.setUp()
         # parameters
         v = 'detuned'
         scheduler = self._SCHEDULER
@@ -176,7 +187,9 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
         assemble(QISA_fn)
         self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_detuned2(self):
+        self.setUp()
         # parameters
         v = 'detuned2'
         scheduler = self._SCHEDULER
@@ -209,7 +222,9 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
         assemble(QISA_fn)
         self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_adriaan(self):
+        self.setUp()
         # parameters
         v = 'adriaan'
         scheduler = self._SCHEDULER
@@ -242,7 +257,9 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
         assemble(QISA_fn)
         self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_1(self):
+        self.setUp()
         # parameters
         v = '1'
         scheduler = self._SCHEDULER
@@ -287,7 +304,9 @@ class Test_Alap_Rc_Schedule(unittest.TestCase):
         assemble(QISA_fn)
         self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
+    @unittest.skipUnless(assembler_present, "libqasm not found")
     def test_7(self):
+        self.setUp()
         # parameters
         v = '7'
         scheduler = self._SCHEDULER

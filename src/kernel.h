@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file   kernel.h
  * @date   04/2017
  * @author Nader Khammassi
@@ -15,21 +15,15 @@
 #include <iterator>
 
 
-#define PI M_PI
+#define K_PI 3.141592653589793238462643383279502884197169399375105820974944592307816406L
 #include "compile_options.h"
 #include "json.h"
 #include "utils.h"
 #include "options.h"
 #include "gate.h"
 #include "classical.h"
-#include "optimizer.h"
 #include "ir.h"
 #include "unitary.h"
-
-
-#ifndef __disable_lemon__
- #include "scheduler.h"
-#endif // __disable_lemon__
 #include "platform.h"
 
 
@@ -56,10 +50,9 @@ public: // FIXME: should be private
     size_t        creg_count;
     kernel_type_t type;
     circuit       c;
-    ql::ir::bundles_t bundles;
+    bool          cycles_valid; // used in bundler to check if kernel has been scheduled
     operation     br_condition;
-    size_t        cycle_time;                               // FIXME: just a copy of platform.cycle_time
-private:
+    size_t        cycle_time;   // FIXME HvS just a copy of platform.cycle_time
     instruction_map_t instruction_map;
 
 public:
@@ -73,6 +66,7 @@ public:
     {
         instruction_map = platform.instruction_map;
         cycle_time = platform.cycle_time;
+        cycles_valid = true;
         // FIXME: check qubit_count and creg_count against platform
         // FIXME: what is the reason we can specify qubit_count and creg_count here anyway
     }
@@ -168,6 +162,7 @@ public:
         std::string gname("rx");    // FIXME: unused
         // to do : rotation decomposition
         c.push_back(new ql::rx(qubit,angle));
+        cycles_valid = false;
     }
 
     void ry(size_t qubit, double angle)
@@ -175,6 +170,7 @@ public:
         std::string gname("ry");    // FIXME: unused
         // to do : rotation decomposition
         c.push_back(new ql::ry(qubit,angle));
+        cycles_valid = false;
     }
 
     void rz(size_t qubit, double angle)
@@ -182,6 +178,7 @@ public:
         std::string gname("rz");    // FIXME: unused
         // to do : rotation decomposition
         c.push_back(new ql::rz(qubit,angle));
+        cycles_valid = false;
     }
 
     void s(size_t qubit)
@@ -278,6 +275,7 @@ public:
     {
         // TODO add custom gate check if needed
         c.push_back(new ql::toffoli(qubit1, qubit2, qubit3));
+        cycles_valid = false;
     }
 
     void swap(size_t qubit1, size_t qubit2)
@@ -293,6 +291,7 @@ public:
     void display()
     {
         c.push_back(new ql::display());
+        cycles_valid = false;
     }
 
     /**
@@ -604,6 +603,11 @@ private:
         else
             result = false;
 
+        if (result)
+        {
+            cycles_valid = false;
+        }
+
         return result;
     }
 
@@ -615,8 +619,13 @@ private:
                                       std::vector<size_t> cregs = {}, size_t duration=0, double angle=0.0)
     {
         bool added = false;
-
-        // first check if a specialized custom gate is available
+#if OPT_DECOMPOSE_WAIT_BARRIER  // hack to skip wait/barrier
+        if(gname=="wait" || gname=="barrier")
+        {
+            return added;   // return, so a default gate will be attempted
+        }
+#endif
+        // construct canonical name
         std::string instr = gname + " ";
         if(qubits.size() > 0)
         {
@@ -626,6 +635,7 @@ private:
                 instr += "q" + std::to_string(qubits[qubits.size()-1]);
         }
 
+        // first check if a specialized custom gate is available
         instruction_map_t::iterator it = instruction_map.find(instr);
         if (it != instruction_map.end())
         {
@@ -647,6 +657,7 @@ private:
             instruction_map_t::iterator it = instruction_map.find(gname);
             if (it != instruction_map.end())
             {
+                // FIXME: body identical to above, just perform two finds with single body
                 custom_gate* g = new custom_gate(*(it->second));
                 for(auto & qubit : qubits)
                     g->operands.push_back(qubit);
@@ -704,7 +715,9 @@ private:
             std::vector<size_t> all_qubits, std::vector<size_t> cregs = {})
     {
         bool added = false;
-        DOUT("Checking if specialized composite gate is available for " << gate_name);
+        DOUT("Checking if specialized decomposition is available for " << gate_name);
+
+        // construct canonical name
         std::string instr_parameterized = gate_name + " ";
         size_t i;
         if(all_qubits.size() > 0)
@@ -720,10 +733,12 @@ private:
         }
         DOUT("specialized instruction name: " << instr_parameterized);
 
+        // find the name
         auto it = instruction_map.find(instr_parameterized);
         if( it != instruction_map.end() )
         {
-            DOUT("specialized gate found for " << instr_parameterized);
+            // check gate type
+            DOUT("specialized composite gate found for " << instr_parameterized);
             composite_gate * gptr = (composite_gate *)(it->second);
             if( __composite_gate__ == gptr->type() )
             {
@@ -735,13 +750,14 @@ private:
                 return false;
             }
 
-
+            // perform decomposition
             std::vector<std::string> sub_instructons;
             get_decomposed_ins( gptr, sub_instructons );
             for(auto & sub_ins : sub_instructons)
             {
+                // extract name and qubits
                 DOUT("Adding sub ins: " << sub_ins);
-                std::replace( sub_ins.begin(), sub_ins.end(), ',', ' ');
+                std::replace( sub_ins.begin(), sub_ins.end(), ',', ' ');    // FIXME: perform all conversions in sanitize_instruction_name()
                 DOUT(" after comma removal, sub ins: " << sub_ins);
                 std::istringstream iss(sub_ins);
 
@@ -873,6 +889,7 @@ private:
                 }
                 DOUT( ql::utils::to_string<size_t>(this_gate_qubits, "actual qubits of this gate:") );
 
+                // FIXME: following code block exists several times in this file
                 // custom gate check
                 // when found, custom_added is true, and the expanded subinstruction was added to the circuit
                 bool custom_added = add_custom_gate_if_available(sub_ins_name, this_gate_qubits, cregs);
@@ -909,6 +926,10 @@ private:
         return added;
     }
 
+/************************************************************************\
+| Public: gate
+\************************************************************************/
+
 public:
     /**
      * custom 1 qubit gate.
@@ -936,7 +957,8 @@ public:
     void gate(std::string gname, std::vector<size_t> qubits = {},
               std::vector<size_t> cregs = {}, size_t duration=0, double angle = 0.0)
     {
-        for(auto & qno : qubits)
+        /// @todo-rn: move these check to a platform-specific backend after qubits are initialized
+          for(auto & qno : qubits)
         {
             if( qno >= qubit_count )
             {
@@ -1044,6 +1066,10 @@ public:
                 }
             }
         }
+        if (added)
+        {
+            cycles_valid = false;
+        }
         return added;
     }
 
@@ -1055,18 +1081,18 @@ public:
         {
             EOUT("Unitary " << u.name <<" has been applied to the wrong number of qubits! " << qubits.size() << " and not " << u_size);
             throw ql::exception("Unitary '"+u.name+"' has been applied to the wrong number of qubits. Cannot be added to kernel! "  + std::to_string(qubits.size()) +" and not "+ std::to_string(u_size), false);
-        
+
         }
-        for(uint i = 0; i< qubits.size()-1; i++)
+        for(uint64_t i = 0; i< qubits.size()-1; i++)
         {
-            for(uint j = i+1; j < qubits.size(); j++)
+            for(uint64_t j = i+1; j < qubits.size(); j++)
             {
                 if(qubits[i] == qubits[j])
                 {
                 EOUT("Qubit numbers used more than once in Unitary: " << u.name << ". Double qubit is number " << qubits[j]);
                 throw ql::exception("Qubit numbers used more than once in Unitary: " + u.name + ". Double qubit is number " + std::to_string(qubits[j]), false);
                 }
-                        
+
             }
         }
         // applying unitary to gates
@@ -1079,6 +1105,7 @@ public:
             //COUT("Instructionlist" << ql::utils::to_string(u.instructionlist));
             int end_index = recursiveRelationsForUnitaryDecomposition(u,qubits, u_size, 0);
             DOUT("Total number of gates added: " << end_index);
+            cycles_valid = false;
         }
         else
         {
@@ -1113,7 +1140,7 @@ public:
                 // This is a special case of only demultiplexing
                 if (u.instructionlist[i+1] == 300.0)
                 {
-                   
+
                     // Two numbers that aren't rotation gate angles
                     int start_counter = i + 2;
                     DOUT("[kernel.h] Optimization: first qubit not affected, skip one step in the recursion. New start_index: " << start_counter);
@@ -1173,12 +1200,13 @@ public:
         for(int i = 1; i < end_index - start_index; i++)
         {
             idx = uint64_log2(((i)^((i)>>1))^((i+1)^((i+1)>>1)));
-            c.push_back(new ql::rz(qubits.back(),-instruction_list[i+start_index]));                
+            c.push_back(new ql::rz(qubits.back(),-instruction_list[i+start_index]));
             c.push_back(new ql::cnot(qubits[idx], qubits.back()));
         }
         // The last one is always controlled from the next qubit to the first qubit
         c.push_back(new ql::rz(qubits.back(),-instruction_list[end_index]));
         c.push_back(new ql::cnot(qubits.end()[-2], qubits.back()));
+        cycles_valid = false;
     }
 
     //controlled qubit is the first in the list.
@@ -1186,20 +1214,21 @@ public:
     {
         // DOUT("Adding a multicontrolled ry-gate at start index "<< start_index << ", to " << ql::utils::to_string(qubits, "qubits: "));
         int idx;
-        
+
         //The first one is always controlled from the last to the first qubit.
         c.push_back(new ql::ry(qubits.back(),-instruction_list[start_index]));
         c.push_back(new ql::cnot(qubits[0], qubits.back()));
 
         for(int i = 1; i < end_index - start_index; i++)
-        { 
+        {
             idx = uint64_log2 (((i)^((i)>>1))^((i+1)^((i+1)>>1)));
             c.push_back(new ql::ry(qubits.back(),-instruction_list[i+start_index]));
             c.push_back(new ql::cnot(qubits[idx], qubits.back()));
         }
-        // Last one is controlled from the next qubit to the first one. 
+        // Last one is controlled from the next qubit to the first one.
         c.push_back(new ql::ry(qubits.back(),-instruction_list[end_index]));
-        c.push_back(new ql::cnot(qubits.end()[-2], qubits.back())); 
+        c.push_back(new ql::cnot(qubits.end()[-2], qubits.back()));
+        cycles_valid = false;
     }
     // source: https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c user Todd Lehman
     int uint64_log2(uint64_t n)
@@ -1211,7 +1240,6 @@ public:
     #undef S
     }
 
-
     /**
      * qasm output
      */
@@ -1219,6 +1247,7 @@ public:
     std::string get_prologue()
     {
         std::stringstream ss;
+	    ss << "\n";
         ss << "." << name << "\n";
         // ss << name << ":\n";
 
@@ -1313,156 +1342,13 @@ public:
         }
 
         c.push_back(new ql::classical(destination, oper));
+        cycles_valid = false;
     }
 
     void classical(std::string operation)
     {
         c.push_back(new ql::classical(operation));
-    }
-
-    void optimize()
-    {
-        DOUT("kernel " << name << " optimize(): circuit before optimizing: ");
-        print(c);
-        DOUT("... end circuit");
-        ql::rotations_merging rm;
-        if (contains_measurements(c))
-        {
-            DOUT("kernel contains measurements ...");
-            // decompose the circuit
-            std::vector<circuit*> cs = split_circuit(c);
-            std::vector<circuit > cs_opt;
-            for (size_t i=0; i<cs.size(); ++i)
-            {
-                if (!contains_measurements(*cs[i]))
-                {
-                    circuit opt = rm.optimize(*cs[i]);
-                    cs_opt.push_back(opt);
-                }
-                else
-                    cs_opt.push_back(*cs[i]);
-            }
-            // for (int i=0; i<cs_opt.size(); ++i)
-            // print(cs_opt[i]);
-            c.clear( );
-            for (size_t i=0; i<cs_opt.size(); ++i)
-                for (size_t j=0; j<cs_opt[i].size(); j++)
-                    c.push_back(cs_opt[i][j]);
-        }
-        else
-        {
-            c = rm.optimize(c);
-        }
-        DOUT("kernel " << name << " optimize(): circuit after optimizing: ");
-        print(c);
-        DOUT("... end circuit");
-    }
-
-    void decompose_toffoli()
-    {
-        DOUT("decompose_toffoli()");
-        for( auto cit = c.begin(); cit != c.end(); ++cit )
-        {
-            auto g = *cit;
-            ql::gate_type_t gtype = g->type();
-            std::vector<size_t> goperands = g->operands;
-
-            ql::quantum_kernel toff_kernel("toff_kernel");
-            toff_kernel.instruction_map = instruction_map;
-            toff_kernel.qubit_count = qubit_count;
-            toff_kernel.cycle_time = cycle_time;
-
-            if( __toffoli_gate__ == gtype )
-            {
-                size_t cq1 = goperands[0];
-                size_t cq2 = goperands[1];
-                size_t tq = goperands[2];
-                auto opt = ql::options::get("decompose_toffoli");
-                if ( opt == "AM" )
-                {
-                    toff_kernel.controlled_cnot_AM(tq, cq1, cq2);
-                }
-                else
-                {
-                    toff_kernel.controlled_cnot_NC(tq, cq1, cq2);
-                }
-                ql::circuit& toff_ckt = toff_kernel.get_circuit();
-                cit = c.erase(cit);
-                cit = c.insert(cit, toff_ckt.begin(), toff_ckt.end());
-            }
-        }
-        DOUT("decompose_toffoli() [Done] ");
-    }
-
-    // schedule support for program.h::schedule()
-    void schedule(quantum_platform platform, std::string& sched_qasm,
-        std::string & dot, std::string& sched_dot)
-    {
-        std::string scheduler = ql::options::get("scheduler");
-        std::string scheduler_uniform = ql::options::get("scheduler_uniform");
-        std::string kqasm("");
-
-#ifndef __disable_lemon__
-        IOUT( scheduler << " scheduling the quantum kernel '" << name << "'...");
-
-        Scheduler sched;
-        sched.init(c, platform, qubit_count, creg_count);
-
-        if(ql::options::get("print_dot_graphs") == "yes")
-        {
-            sched.get_dot(dot);
-        }
-
-
-        if("ASAP" == scheduler)
-        {
-            if ("yes" == scheduler_uniform)
-            {
-                EOUT("Uniform scheduling not supported with ASAP; please turn on ALAP to perform uniform scheduling");     // FIXME: FATAL?
-            }
-            else if ("no" == scheduler_uniform)
-            {
-                ql::ir::bundles_t bundles = sched.schedule_asap(sched_dot);
-                kqasm = ql::ir::qasm(bundles);
-            }
-            else
-            {
-                EOUT("Unknown scheduler_uniform option value");
-            }
-        }
-        else if("ALAP" == scheduler)
-        {
-            if ("yes" == scheduler_uniform)
-            {
-                ql::ir::bundles_t bundles = sched.schedule_alap_uniform();
-                kqasm = ql::ir::qasm(bundles);
-            }
-            else if ("no" == scheduler_uniform)
-            {
-                ql::ir::bundles_t bundles = sched.schedule_alap(sched_dot);
-                kqasm = ql::ir::qasm(bundles);
-            }
-            else
-            {
-                EOUT("Unknown scheduler_uniform option value");
-            }
-        }
-        else
-        {
-            EOUT("Unknown scheduler");
-            throw ql::exception("Unknown scheduler!", false);
-        }
-        DOUT( scheduler << " scheduling the quantum kernel '" << name << "' DONE");
-
-        // schedulers assigned gatep->cycle; sort circuit on this
-        typedef ql::gate *      gate_p;
-        std::sort(c.begin(), c.end(),
-                [&](gate_p g1, gate_p g2) { return g1->cycle < g2->cycle; }
-        );
-
-        sched_qasm = get_prologue() + kqasm + get_epilogue();
-
-#endif // __disable_lemon__
+        cycles_valid = false;
     }
 
     /************************************************************************\
@@ -1830,38 +1716,38 @@ public:
             {
                 size_t tq = goperands[0];
                 size_t cq = control_qubit;
-                controlled_rx(tq, cq, M_PI/2);
+                controlled_rx(tq, cq, K_PI/2);
             }
             else if( __mrx90_gate__ == gtype )
             {
                 size_t tq = goperands[0];
                 size_t cq = control_qubit;
-                controlled_rx(tq, cq, -1*M_PI/2);
+                controlled_rx(tq, cq, -1*K_PI/2);
             }
             else if( __rx180_gate__ == gtype )
             {
                 size_t tq = goperands[0];
                 size_t cq = control_qubit;
-                controlled_rx(tq, cq, M_PI);
+                controlled_rx(tq, cq, K_PI);
                 // controlled_x(tq, cq);
             }
             else if( __ry90_gate__ == gtype )
             {
                 size_t tq = goperands[0];
                 size_t cq = control_qubit;
-                controlled_ry(tq, cq, M_PI/4);
+                controlled_ry(tq, cq, K_PI/4);
             }
             else if( __mry90_gate__ == gtype )
             {
                 size_t tq = goperands[0];
                 size_t cq = control_qubit;
-                controlled_ry(tq, cq, -1*M_PI/4);
+                controlled_ry(tq, cq, -1*K_PI/4);
             }
             else if( __ry180_gate__ == gtype )
             {
                 size_t tq = goperands[0];
                 size_t cq = control_qubit;
-                controlled_ry(tq, cq, M_PI);
+                controlled_ry(tq, cq, K_PI);
                 // controlled_y(tq, cq);
             }
             else
