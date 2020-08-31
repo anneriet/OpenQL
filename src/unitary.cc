@@ -9,7 +9,9 @@
 #include <unitary.h>
 
 #include <Eigen/MatrixFunctions>
-#include <src/misc/lapacke.h>
+//#include <src/misc/lapacke.h>
+
+typedef unsigned int uint;
 
 #include <chrono>
 
@@ -87,7 +89,7 @@ public:
             //Throw an error
             EOUT("Unitary " << name <<" is not a unitary matrix!");
 
-            throw ql::exception("Error: Unitary '"+ name+"' is not a unitary matrix. Cannot be decomposed!" + to_string(matmatadjoint), false);
+            throw ql::exception("Error: Unitary '"+ name+"' is not a unitary matrix. Cannot be decomposed!", false);
         }
         // initialize the general M^k lookuptable
         genMk();
@@ -116,7 +118,7 @@ public:
 
     void decomp_function(const Eigen::Ref<const complex_matrix>& matrix, int numberofbits)
     {          
-        DOUT("decomp_function: \n" << to_string(matrix));         
+       // DOUT("decomp_function: \n" << to_string(matrix));         
         if(numberofbits == 1)
         {
             zyz_decomp(matrix);
@@ -135,7 +137,7 @@ public:
                 instructionlist.push_back(200.0);
                 if(matrix.topLeftCorner(n, n).isApprox(matrix.bottomRightCorner(n,n),10e-4))
                 {
-                    DOUT("Optimization: Unitaries are equal, skip one step in the recursion for unitaries of size: " << n << " They are both: " << matrix.topLeftCorner(n, n));
+                    DOUT("Optimization: Unitaries are equal, skip one step in the recursion for unitaries of size: " << n);
                     instructionlist.push_back(300.0);
                     decomp_function(matrix.topLeftCorner(n, n), numberofbits-1);
                 }
@@ -224,7 +226,7 @@ public:
         s.noalias() = u2.adjoint()*q2;
         if(k < p-1)
         {
-            DOUT("k is smaller than size of q1 = "<< p << ", adjustments will be made, k = " << k);
+            // DOUT("k is smaller than size of q1 = "<< p << ", adjustments will be made, k = " << k);
             k = k+1;
             Eigen::BDCSVD<complex_matrix> svd2(p-k, p-k);
             svd2.compute(s.block(k, k, p-k, p-k), Eigen::ComputeThinU | Eigen::ComputeThinV);
@@ -274,10 +276,8 @@ public:
             }
             else
             {
-                DOUT("q1 is not correct! (is not usually an issue");
-                DOUT("q1: \n" << U.topLeftCorner(p,p));
-                DOUT("reconstructed q1: \n" << u1*c*v1.adjoint());
-
+                DOUT("q1 of size" + std::to_string(p) + " is not correct! (is not usually an issue)");
+     
             }
             if(U.bottomLeftCorner(p,p).isApprox(u2*s*v1.adjoint(), 10e-8))
             {
@@ -285,9 +285,7 @@ public:
             }
             else
             {
-                DOUT("q2 is not correct! (is not usually an issue)");
-                DOUT("q2: " << U.bottomLeftCorner(p,p));
-                DOUT("reconstructed q2: " << u2*s*v1.adjoint());
+                DOUT("q2 of size" + std::to_string(p) + " is not correct! (is not usually an issue)");
             }
         }
         v1.adjointInPlace(); // Use this instead of = v1.adjoint (to avoid aliasing issues)
@@ -296,25 +294,17 @@ public:
         complex_matrix tmp_s = u1.adjoint()*U.topRightCorner(p,p);
         complex_matrix tmp_c = u2.adjoint()*U.bottomRightCorner(p,p);
 
-        // std::vector<int> c_ind_row;
-        // std::vector<int> s_ind_row;
         for(int i = 0; i < p; i++)
         {
             if(std::abs(s(i,i)) > std::abs(c(i,i)))
             {
-                // std::vector<int> s_ind_row;
                 v2.row(i).noalias() = tmp_s.row(i)/s(i,i);                
             }
             else
             {
-                // c_ind_row.push_back(i);
                 v2.row(i).noalias() = tmp_c.row(i)/c(i,i);
             }
         }
-        
-
-        // v2(s_ind_row, Eigen::all) = tmp_s(s_ind_row, Eigen::all).rowwise() / s(s_ind_row, s_ind_row).array();
-        // v2(c_ind_row, Eigen::all) = tmp_c(c_ind_row, Eigen::all).rowwise() / c(c_ind_row, c_ind_row).array();
         // U = [q1, U01] = [u1    ][c  s][v1  ]
         //     [q2, U11] = [    u2][-s c][   v2]
     
@@ -326,7 +316,7 @@ public:
         // Just to see if it kinda matches
         if(!tmp.isApprox(U, 10e-2))
         {
-            throw ql::exception("CSD of unitary '"+ name+"' is wrong! Failed at matrix: \n"+to_string(tmp) + "\nwhich should be: \n" + to_string(U), false);
+            throw ql::exception("CSD of unitary '"+ name+"' not correct! Failed at matrix size " + std::to_string(n), false);
         }
             // CSD_time3 += (std::chrono::steady_clock::now() - start2);
 
@@ -373,12 +363,10 @@ public:
         // [0  U2]    [0 V][0 D*][0 W]
         // auto start = std::chrono::steady_clock::now(); 
         complex_matrix check = U1*U2.adjoint();
-        // complex_matrix D;
-        // complex_matrix V;
-        // complex_matrix W;
+
         if(check == check.adjoint())
         {
-            IOUT("Demultiplexing matrix is self-adjoint()");
+            DOUT("Demultiplexing matrix is self-adjoint()");
             Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigslv(check);
             D.noalias() = ((complex_matrix) eigslv.eigenvalues()).cwiseSqrt();
             V.noalias() = eigslv.eigenvectors();
@@ -386,30 +374,30 @@ public:
         }
         else
         {
-            if (numberofcontrolbits < 5) //schur is faster for small matrices
-            {
+//            if (numberofcontrolbits < 5) //  Schur is faster for small matrices
+//            {
                 Eigen::ComplexSchur<complex_matrix> decomposition(check);
                 D.noalias() = decomposition.matrixT().diagonal().cwiseSqrt();
                 V.noalias() = decomposition.matrixU();
                 W.noalias() = D.asDiagonal() * V.adjoint() * U2;
-            }
-            else
-            {
-                Eigen::ComplexEigenSolver<complex_matrix> decomposition(check);
-                D.noalias() = decomposition.eigenvalues().cwiseSqrt();
-                V.noalias() = decomposition.eigenvectors();
-                W.noalias() = D.asDiagonal() * V.adjoint() * U2;
-            }
+//            }
+//            else
+//            {
+//                Eigen::ComplexEigenSolver<complex_matrix> decomposition(check);
+//                D.noalias() = decomposition.eigenvalues().cwiseSqrt();
+//                V.noalias() = decomposition.eigenvectors();
+//                W.noalias() = D.asDiagonal() * V.adjoint() * U2;
+//            }
         }
     
         // demultiplexing_time += (std::chrono::steady_clock::now() - start);
         if(!(V*V.adjoint()).isApprox(Eigen::MatrixXd::Identity(V.rows(), V.rows()), 10e-3))
         {
-            DOUT("Eigenvalue decomposition incorrect: V is not unitary, adjustments will be made");
-            Eigen::BDCSVD<complex_matrix> svd3(V.block(0,0,V.rows(),2), Eigen::ComputeFullU);
+            DOUT("Eigenvalue decomposition incorrect: V of size " + std::to_string(V.rows())+"is not unitary, adjustments will be made");
+            Eigen::JacobiSVD<complex_matrix> svd3(V.block(0,0,V.rows(),2), Eigen::ComputeFullU);
             V.block(0,0,V.rows(),2) = svd3.matrixU();
-            svd3.compute(V(Eigen::all,Eigen::seq(Eigen::last-1,Eigen::last)), Eigen::ComputeFullU);
-            V(Eigen::all,Eigen::seq(Eigen::last-1,Eigen::last)) = svd3.matrixU();
+            svd3.compute(V.block(0,V.rows()-2,V.rows(),2), Eigen::ComputeFullU);
+            V.block(0,V.rows()-2,V.rows(),2) = svd3.matrixU();
              
         }
 
@@ -417,8 +405,8 @@ public:
         complex_matrix Dtemp = D.asDiagonal();
         if(!U1.isApprox(V*Dtemp*W, 10e-2) || !U2.isApprox(V*Dtemp.adjoint()*W, 10e-2))
         {
-            EOUT("Demultiplexing not correct!");
-            throw ql::exception("Demultiplexing of unitary '"+ name+"' not correct! Failed at matrix U1: \n"+to_string(U1)+ "and matrix U2: \n" +to_string(U2) + "\nwhile they are: \n" + to_string(V*D.asDiagonal()*W) + "\nand \n" + to_string(V*D.conjugate().asDiagonal()*W), false);
+            DOUT("Demultiplexing not correct!");
+            throw ql::exception("Demultiplexing of unitary '"+ name+"' not correct! Failed at matrix size "+ std::to_string(V.rows()), false);
         }
 
 
@@ -445,8 +433,6 @@ public:
             }
         genMk_lookuptable.push_back(Mk);
         }
-        
-        // return genMk_lookuptable[numberqubits-1];
     }
 
     // source: https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c user Todd Lehman
@@ -482,11 +468,12 @@ public:
         Eigen::VectorXd temp =  2*Eigen::asin(ss.array()).real();
         Eigen::CompleteOrthogonalDecomposition<Eigen::MatrixXd> dec(genMk_lookuptable[uint64_log2(halfthesizeofthematrix)-1]);
         Eigen::VectorXd tr = dec.solve(temp);
+        
         // Check is very approximate to account for low-precision input matrices
         if(!temp.isApprox(genMk_lookuptable[uint64_log2(halfthesizeofthematrix)-1]*tr, 10e-2))
         {
                 EOUT("Multicontrolled Y not correct!");
-                throw ql::exception("Demultiplexing of unitary '"+ name+"' not correct! Failed at demultiplexing of matrix ss: \n"  + to_string(ss), false);
+                throw ql::exception("Demultiplexing of unitary '"+ name+"' not correct! Failed at matrix size " +std::to_string(halfthesizeofthematrix), false);
         }
 
         instructionlist.insert(instructionlist.end(), &tr[0], &tr[halfthesizeofthematrix]);
@@ -500,11 +487,12 @@ public:
         Eigen::VectorXd temp =  (std::complex<double>(0,-2)*Eigen::log(D.array())).real();
         Eigen::CompleteOrthogonalDecomposition<Eigen::MatrixXd> dec(genMk_lookuptable[uint64_log2(halfthesizeofthematrix)-1]);
         Eigen::VectorXd tr = dec.solve(temp);
+        
         // Check is very approximate to account for low-precision input matrices
         if(!temp.isApprox(genMk_lookuptable[uint64_log2(halfthesizeofthematrix)-1]*tr, 10e-2))
         {
                 EOUT("Multicontrolled Z not correct!");
-                throw ql::exception("Demultiplexing of unitary '"+ name+"' not correct! Failed at demultiplexing of matrix D: \n"+ to_string(D), false);
+                throw ql::exception("Demultiplexing of unitary '"+ name+"' not correct! Failed at matrix size "+std::to_string(halfthesizeofthematrix), false);
         }
         
 
