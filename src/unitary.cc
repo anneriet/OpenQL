@@ -201,10 +201,6 @@ public:
         {
             int n = matrix.rows()/2;
 
-            // Eigen::MatrixXcf V(n,n);
-            // Eigen::MatrixXcf W(n,n);
-            // Eigen::VectorXcf D(n);
-
             // if q2 is zero, the whole thing is a demultiplexing problem instead of full CSD
             if(matrix.bottomLeftCorner(n,n).isZero(10e-14) && matrix.topRightCorner(n,n).isZero(10e-14))
             {
@@ -248,15 +244,17 @@ public:
 			Eigen::MatrixXcf::Map(Uvec, 2*n, 2*n) = matrix;
        	
        		uses_cuncsd(Uvec, n, U1, U2, V1T, V2T, THETA);
+               
        		Eigen::VectorXf theta = Eigen::Map<Eigen::VectorXf, Eigen::Unaligned>(THETA, n);
             Eigen::MatrixXcf L0 = Eigen::Map<Eigen::MatrixXcf, Eigen::Unaligned>(U1, n, n);
             Eigen::MatrixXcf L1 = Eigen::Map<Eigen::MatrixXcf, Eigen::Unaligned>(U2, n, n);
             Eigen::MatrixXcf R0 = Eigen::Map<Eigen::MatrixXcf, Eigen::Unaligned>(V1T, n, n);
             Eigen::MatrixXcf R1 = Eigen::Map<Eigen::MatrixXcf, Eigen::Unaligned>(V2T, n, n);
        		
-            Eigen::MatrixXcf tmp(2*n,2*n);
             Eigen::MatrixXcf c = theta.array().cos().matrix().asDiagonal();
             Eigen::MatrixXcf s = (-1*theta.array().sin()).matrix().asDiagonal();
+
+            Eigen::MatrixXcf tmp(2*n,2*n);
             tmp.topLeftCorner(n,n) = L0*c*R0;
             tmp.bottomLeftCorner(n,n) = -L1*s*R0;
             tmp.topRightCorner(n,n) = L0*s*R1;
