@@ -25,7 +25,7 @@ class unitary
 public:
     std::string name;
     std::vector<std::complex<double>> array;
-    std::vector<std::complex<double>> SU;
+    std::vector<std::complex<float>> SU;
     bool is_decomposed;
     std::vector<double> instructionlist;
 

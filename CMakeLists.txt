@@ -230,7 +230,15 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(ql PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
+# LAPACK ----------------------------------------------------------------------
 
+# Look for linear algebra library (lapack)
+find_package(LAPACK)
+If(LAPACK_FOUND)
+	target_link_libraries(ql PUBLIC ${LAPACK_LIBRARIES})
+endif()
+	
+	
 # CLI11 -----------------------------------------------------------------------
 
 # Wrap CLI11 in an interface library to link against.
