@@ -458,7 +458,9 @@ void Program::add_for(const Kernel &k, size_t iterations) {
 void Program::add_for(const Program &p, size_t iterations) {
     program->add_for( *(p.program), iterations);
 }
-
+void Program::declare(const std::string &param_type, const std::string &param_name="") {
+    program->declare(param_type, param_name);
+}
 void Program::compile() {
     //program->compile();
     program->compile_modular();

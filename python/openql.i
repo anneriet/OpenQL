@@ -812,6 +812,16 @@ arg2: int
     iteration count
 """
 
+%feature("docstring") Program::declare
+""" Declaration of a parameter of the specified type
+
+Parameters
+----------
+arg1 : String
+    type of the parameter
+arg2: String
+    name of the parameter
+"""
 
 %feature("docstring") Program::compile
 """ Compiles the program

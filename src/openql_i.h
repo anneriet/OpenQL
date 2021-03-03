@@ -186,6 +186,8 @@ public:
     void add_do_while(const Program &p, const Operation &operation);
     void add_for(const Kernel &k, size_t iterations);
     void add_for(const Program &p, size_t iterations);
+    void declare(const std::string &param_type, const std::string &param_name);
+
     void compile();
     std::string microcode() const;
     void print_interaction_matrix() const;

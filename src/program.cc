@@ -301,6 +301,10 @@ void quantum_program::add_for(const quantum_program &p, UInt iterations) {
     phi_node_count++;
 }
 
+void quantum_program::declare(const Str &param_type, const Str &param_name="") {
+    QL_DOUT("Parameter type " << param_type << " name: " << param_name);
+}
+
 void quantum_program::set_config_file(const Str &file_name) {
     config_file_name = file_name;
     default_config   = false;
