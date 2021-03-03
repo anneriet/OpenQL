@@ -21,7 +21,7 @@ public:
 
     unitary();
     unitary(const utils::Str &name, const utils::Vec<utils::Complex> &array);
-    utils::int size() const;
+    utils::Int size() const;
     void decompose();
     static utils::Bool is_decompose_support_enabled();
 };

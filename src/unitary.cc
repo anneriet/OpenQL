@@ -34,7 +34,7 @@ unitary::unitary(
 {
 }
 
-utils::int unitary::size() const {
+Int unitary::size() const {
     // JvS: Note that the original unitary::size() used
     // Eigen::Matrix::size() if the array is empty. However, if the array
     // is empty, _matrix is never initialized beyond its default ctor,
@@ -64,8 +64,6 @@ Bool unitary::is_decompose_support_enabled() {
 // this code.
 class UnitaryDecomposer {
 private:
-//    typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> complex_matrix ;
-//  complex_matrix _matrix;
 
 public:
     Str name;
@@ -92,10 +90,10 @@ public:
     {
 		return array.size();
     }
+    Eigen::MatrixXcd _matrix;
 
     Eigen::MatrixXcd getMatrix()
     {
-    Eigen::MatrixXcd _matrix;
         if (!array.empty())
         {
             Int matrix_size = (int)std::pow(array.size(), 0.5);
@@ -134,7 +132,7 @@ public:
     }
 
     Str to_string(
-        const complex_matrix &m,
+        const Eigen::MatrixXcd &m,
         const Str &vector_prefix = "",
         const Str &elem_sep = ", "
     ) {
@@ -143,7 +141,7 @@ public:
         return ss.str();
     }
 
-    void decomp_function(const Eigen::Ref<const complex_matrix>& matrix, Int numberofbits) {
+    void decomp_function(const Eigen::Ref<const Eigen::MatrixXcd>& matrix, Int numberofbits) {
         QL_DOUT("decomp_function: \n" << to_string(matrix));
         if(numberofbits == 1) {
             zyz_decomp(matrix);
@@ -182,11 +180,11 @@ public:
                 instructionlist.push_back(100.0);
                 decomp_function(matrix(Eigen::seqN(0, n, 2), Eigen::seqN(0, n, 2)), numberofbits-1);
             } else {
-                complex_matrix ss(n,n);
-                complex_matrix L0(n,n);
-                complex_matrix L1(n,n);
-                complex_matrix R0(n,n);
-                complex_matrix R1(n,n);
+                Eigen::MatrixXcd ss(n,n);
+                Eigen::MatrixXcd L0(n,n);
+                Eigen::MatrixXcd L1(n,n);
+                Eigen::MatrixXcd R0(n,n);
+                Eigen::MatrixXcd R1(n,n);
                 CSD(matrix, L0, L1, R0, R1, ss);
                 demultiplexing(R0, R1, V, D, W, numberofbits-1);
                 decomp_function(W, numberofbits-1);
@@ -205,19 +203,17 @@ public:
     }
 
     void CSD(
-        const Eigen::Ref<const complex_matrix> &U,
-        Eigen::Ref<complex_matrix> u1,
-        Eigen::Ref<complex_matrix> u2,
-        Eigen::Ref<complex_matrix> v1,
-        Eigen::Ref<complex_matrix> v2,
-        Eigen::Ref<complex_matrix> s
+        const Eigen::Ref<const Eigen::MatrixXcd> &U,
+        Eigen::Ref<Eigen::MatrixXcd> u1,
+        Eigen::Ref<Eigen::MatrixXcd> u2,
+        Eigen::Ref<Eigen::MatrixXcd> v1,
+        Eigen::Ref<Eigen::MatrixXcd> v2,
+        Eigen::Ref<Eigen::MatrixXcd> s
     ) {
         //Cosine sine decomposition
         // U = [q1, U01] = [u1    ][c  s][v1  ]
         //     [q2, U11] = [    u2][-s c][   v2]
         Int n = U.rows();
-        // complex_matrix c(n,n); // c matrix is not needed for the higher level
-        // complex_matrix q1 = U.topLeftCorner(n/2,m/2);
 
         Eigen::BDCSVD<Eigen::MatrixXcd> svd(n/2,n/2);
         svd.compute(U.topLeftCorner(n/2,n/2), Eigen::ComputeThinU | Eigen::ComputeThinV); // possible because it's square anyway
@@ -226,12 +222,11 @@ public:
         // thinCSD: q1 = u1*c*v1.adjoint()
         //          q2 = u2*s*v1.adjoint()
         Int p = n/2;
-        // complex_matrix z = Eigen::MatrixXd::Identity(p, p).colwise().reverse();
-        complex_matrix c(svd.singularValues().reverse().asDiagonal());
+        Eigen::MatrixXcd c(svd.singularValues().reverse().asDiagonal());
         u1.noalias() = svd.matrixU().rowwise().reverse();
         v1.noalias() = svd.matrixV().rowwise().reverse(); // Same v as in matlab: u*s*v.adjoint() = q1
 
-        complex_matrix q2 = U.bottomLeftCorner(p,p)*v1;
+        Eigen::MatrixXcd q2 = U.bottomLeftCorner(p,p)*v1;
 
         Int k = 0;
         for (Int j = 1; j < p; j++) {
@@ -255,7 +250,7 @@ public:
             u2.block(0,k, p,p-k) = u2.block(0,k, p,p-k)*svd2.matrixU();
             v1.block(0,k, p,p-k) = v1.block(0,k, p,p-k)*svd2.matrixV();
 
-            Eigen::HouseholderQR<complex_matrix> qr2(p-k, p-k);
+            Eigen::HouseholderQR<Eigen::MatrixXcd> qr2(p-k, p-k);
 
             qr2.compute(c.block(k,k, p-k,p-k));
             c.block(k,k,p-k,p-k) = qr2.matrixQR().triangularView<Eigen::Upper>();
@@ -287,8 +282,6 @@ public:
         Eigen::MatrixXcd tmp_s = u1.adjoint()*U.topRightCorner(p,p);
         Eigen::MatrixXcd tmp_c = u2.adjoint()*U.bottomRightCorner(p,p);
 
-        // Vec<Int> c_ind_row;
-        // Vec<Int> s_ind_row;
         for (Int i = 0; i < p; i++) {
             if (abs(s(i,i)) > abs(c(i,i))) {
                 // Vec<Int> s_ind_row;
@@ -302,7 +295,7 @@ public:
         // U = [q1, U01] = [u1    ][c  s][v1  ]
         //     [q2, U11] = [    u2][-s c][   v2]
 
-        complex_matrix tmp(n,n);
+        Eigen::MatrixXcd tmp(n,n);
         tmp.topLeftCorner(p,p) = u1*c*v1;
         tmp.bottomLeftCorner(p,p) = -u2*s*v1;
         tmp.topRightCorner(p,p) = u1*s*v2;
@@ -315,9 +308,9 @@ public:
 
     }
 
-    void zyz_decomp(const Eigen::Ref<const complex_matrix> &matrix) {
+    void zyz_decomp(const Eigen::Ref<const Eigen::MatrixXcd> &matrix) {
 
-        Complex det = matrix.determinant();// matrix(0,0)*matrix(1,1)-matrix(1,0)*matrix(0,1);
+        Complex det = matrix.determinant();
 
         Real delta = atan2(det.imag(), det.real())/matrix.rows();
         Complex A = exp(Complex(0,-1)*delta)*matrix(0,0);
@@ -336,25 +329,25 @@ public:
 
         Real t1 = atan2(A.imag(),A.real());
         Real t2 = atan2(B.imag(), B.real());
-        alpha = t1+t2;
-        gamma = t1-t2;
-        beta = 2*atan2(sw*sqrt(pow((Real) wx,2)+pow((Real) wy,2)),sqrt(pow((Real) A.real(),2)+pow((wz*sw),2)));
+        Real alpha = t1+t2;
+        Real gamma = t1-t2;
+        Real beta = 2*atan2(sw*sqrt(pow((Real) wx,2)+pow((Real) wy,2)),sqrt(pow((Real) A.real(),2)+pow((wz*sw),2)));
         instructionlist.push_back(-gamma);
         instructionlist.push_back(-beta);
         instructionlist.push_back(-alpha);
     }
 
     void demultiplexing(
-        const Eigen::Ref<const complex_matrix> &U1,
-        const Eigen::Ref<const complex_matrix> &U2,
-        Eigen::Ref<complex_matrix> V,
+        const Eigen::Ref<const Eigen::MatrixXcd> &U1,
+        const Eigen::Ref<const Eigen::MatrixXcd> &U2,
+        Eigen::Ref<Eigen::MatrixXcd> V,
         Eigen::Ref<Eigen::VectorXcd> D,
-        Eigen::Ref<complex_matrix> W,
+        Eigen::Ref<Eigen::MatrixXcd> W,
         Int numberofcontrolbits
     ) {
         // [U1 0 ]  = [V 0][D 0 ][W 0]
         // [0  U2]    [0 V][0 D*][0 W]
-        complex_matrix check = U1*U2.adjoint();
+        Eigen::MatrixXcd check = U1*U2.adjoint();
         if (check == check.adjoint()) {
             QL_IOUT("Demultiplexing matrix is self-adjoint()");
             Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigslv(check);
@@ -363,20 +356,19 @@ public:
             W.noalias() = D.asDiagonal()*V.adjoint()*U2;
         } else {
             if (numberofcontrolbits < 5) {//schur is faster for small matrices
-                Eigen::ComplexSchur<complex_matrix> decomposition(check);
+                Eigen::ComplexSchur<Eigen::MatrixXcd> decomposition(check);
                 D.noalias() = decomposition.matrixT().diagonal().cwiseSqrt();
                 V.noalias() = decomposition.matrixU();
                 W.noalias() = D.asDiagonal() * V.adjoint() * U2;
             } else {
-                Eigen::ComplexEigenSolver<complex_matrix> decomposition(check);
+                Eigen::ComplexEigenSolver<Eigen::MatrixXcd> decomposition(check);
                 D.noalias() = decomposition.eigenvalues().cwiseSqrt();
                 V.noalias() = decomposition.eigenvectors();
                 W.noalias() = D.asDiagonal() * V.adjoint() * U2;
             }
-        }
-    
+        }   
 
-        if (!(V*V.adjoint()).isApprox(Eigen::MatrixXd::Identity(V.rows(), V.rows()), 10e-3)) {
+        if (!(V*V.adjoint()).isApprox(Eigen::MatrixXd::Identity(V.rows(), V.rows()), 10e-3))
         {
             QL_DOUT("Eigenvalue decomposition incorrect: V is not unitary, adjustments will be made");
             Eigen::ComplexSchur<Eigen::MatrixXcd> decomposition(check);
@@ -401,7 +393,7 @@ public:
     Vec<Eigen::MatrixXd> genMk_lookuptable;
 
     // returns M^k = (-1)^(b_(i-1)*g_(i-1)), where * is bitwise inner product, g = binary gray code, b = binary code.
-    void genMk(int numberofqubits)
+    void genMk(Int numberofqubits)
     {
         // int numberqubits = uint64_log2(_matrix.rows());
         for(Int n = 1; n <= numberofqubits; n++)
@@ -437,7 +429,7 @@ public:
         }
     }
 
-    void multicontrolledY(const Eigen::Ref<const Eigen::VectorXcd> &ss, Int halfthesizeofthematrix) {
+    void multicontrolledY(const Eigen::Ref<const Eigen::VectorXcd> &ss, Eigen::Index halfthesizeofthematrix) {
         Eigen::VectorXd temp =  2*Eigen::asin(ss.array()).real();
         Eigen::CompleteOrthogonalDecomposition<Eigen::MatrixXd> dec(genMk_lookuptable[uint64_log2(halfthesizeofthematrix)-1]);
         Eigen::VectorXd tr = dec.solve(temp);
@@ -451,7 +443,7 @@ public:
         instructionlist.insert(instructionlist.end(), &tr[0], &tr[halfthesizeofthematrix]);
     }
 
-    void multicontrolledZ(const Eigen::Ref<const Eigen::VectorXcd> &D, Int halfthesizeofthematrix) {
+    void multicontrolledZ(const Eigen::Ref<const Eigen::VectorXcd> &D, Eigen::Index halfthesizeofthematrix) {
 
         Eigen::VectorXd temp =  (Complex(0,-2)*Eigen::log(D.array())).real();
         Eigen::CompleteOrthogonalDecomposition<Eigen::MatrixXd> dec(genMk_lookuptable[uint64_log2(halfthesizeofthematrix)-1]);
