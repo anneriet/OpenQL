@@ -7,6 +7,7 @@ S=$(git rev-parse --git-dir)/modules/deps/eigen/info/sparse-checkout
 #clear contents
 : > $S
 
+
 #include <unsupported/Eigen/MatrixFunctions>
 # #include <Eigen/src/misc/lapacke.h>
 echo 'unsupported/Eigen/MatrixFunctions' >>$S
