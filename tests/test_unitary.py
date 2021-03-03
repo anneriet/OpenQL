@@ -11,10 +11,9 @@ try:
 except ImportError:
     qx = None
 
-curdir = os.path.dirname(__file__)
+curdir = os.path.dirname(os.path.realpath(__file__))
 config_fn = os.path.join(curdir, 'test_cfg_none_simple.json')
 platform = ql.Platform('platform_none', config_fn)
-rootDir = os.path.dirname(os.path.realpath(__file__))
 output_dir = os.path.join(curdir, 'test_output')
 
 c0 = ""
@@ -35,15 +34,15 @@ def helper_prob(qubitstate):
 class Test_conjugated_kernel(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUp(self):
+        ql.initialize()
         ql.set_option('output_dir', output_dir)
         ql.set_option('optimize', 'no')
         ql.set_option('scheduler', 'ASAP')
         ql.set_option('log_level', 'LOG_NOTHING')
-        ql.set_option('write_qasm_files', 'yes')
+        # ql.set_option('write_qasm_files', 'yes')
 
     def test_unitary_basic(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_unitary_pass', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -60,7 +59,6 @@ class Test_conjugated_kernel(unittest.TestCase):
         p.compile()
 
     def test_unitary_called_hadamard(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_unitary_called_hadamard', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -75,7 +73,6 @@ class Test_conjugated_kernel(unittest.TestCase):
         p.compile()
 	
     def test_unitary_undecomposed(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_unitary_pass', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -88,10 +85,9 @@ class Test_conjugated_kernel(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             k.gate(u, [2])
 
-        self.assertEqual(str(cm.exception), 'Unitary \'u1\' not decomposed. Cannot be added to kernel!')
+        self.assertEqual(str(cm.exception).split('\n', maxsplit=1)[0], 'Unitary \'u1\' not decomposed. Cannot be added to kernel!')
 
     def test_unitary_wrongnumberofqubits(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_unitary_pass', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -104,10 +100,9 @@ class Test_conjugated_kernel(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             k.gate(u, [1,2])
 
-        self.assertEqual(str(cm.exception), 'Unitary \'u1\' has been applied to the wrong number of qubits. Cannot be added to kernel! 2 and not 1.000000')
+        self.assertEqual(str(cm.exception).split('\n', maxsplit=1)[0], 'Unitary \'u1\' has been applied to the wrong number of qubits. Cannot be added to kernel! 2 and not 1')
     
     def test_unitary_wrongnumberofqubits_toofew(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_unitary_pass', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -121,11 +116,10 @@ class Test_conjugated_kernel(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             k.gate(u, [0])
 
-        self.assertEqual(str(cm.exception), 'Unitary \'u1\' has been applied to the wrong number of qubits. Cannot be added to kernel! 1 and not 2.000000')
+        self.assertEqual(str(cm.exception).split('\n', maxsplit=1)[0], 'Unitary \'u1\' has been applied to the wrong number of qubits. Cannot be added to kernel! 1 and not 2')
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_unitary_decompose_I(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_unitary_I', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -147,7 +141,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_unitary_decompose_X(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_unitary_X', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -169,7 +162,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_unitary_decompose_Y(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_unitary_Y', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -191,7 +183,6 @@ class Test_conjugated_kernel(unittest.TestCase):
  
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_unitary_decompose_Z(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_unitary_Z', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -217,7 +208,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_unitary_decompose_IYZ(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_unitary_IYZ', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -249,7 +239,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_unitary_decompose_IYZ_differentorder(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_unitary_IYZ', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -283,7 +272,6 @@ class Test_conjugated_kernel(unittest.TestCase):
         self.assertAlmostEqual(0.5, helper_regex(c0)[1], 5)  
 
     def test_unitary_decompose_nonunitary(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_unitary_nonunitary', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -298,11 +286,10 @@ class Test_conjugated_kernel(unittest.TestCase):
             add_kernel(k)
             p.compile()
 
-        self.assertEqual(str(cm.exception), "Error: Unitary 'WRONG' is not a unitary matrix. Cannot be decomposed!")
+        self.assertEqual(str(cm.exception).split('\n\n', maxsplit=1)[0], "Error: Unitary 'WRONG' is not a unitary matrix. Cannot be decomposed!(0,0) (0,0)\n(0,0) (0,0)")
   
   # input for the unitary decomposition needs to be an array
     def test_unitary_decompose_matrixinsteadofarray(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_unitary_wrongtype', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -314,7 +301,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_unitary_decompose_2qubit_CNOT(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_unitary_2qubitCNOT', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -340,7 +326,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_unitary_decompose_2qubit_CNOT_2(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_unitary_2qubitCNOT', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -368,7 +353,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_non_90_degree_angle(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_unitary_non_90_degree_angle', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -395,7 +379,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_00(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqx00', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -427,7 +410,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_01(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqx01', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -464,7 +446,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_10(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqx10', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -501,7 +482,6 @@ class Test_conjugated_kernel(unittest.TestCase):
     
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_11(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqx11', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -536,7 +516,6 @@ class Test_conjugated_kernel(unittest.TestCase):
     
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_bellstate(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqxbellstate', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -573,7 +552,6 @@ class Test_conjugated_kernel(unittest.TestCase):
     
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_fullyentangled(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqxfullentangled', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -610,7 +588,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_fullyentangled_3qubit(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_usingqxfullentangled_3qubit', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -676,7 +653,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_fullyentangled_4qubit(self):
-        self.setUpClass()
         num_qubits = 4
         p = ql.Program('test_usingqxfullentangled_4qubit', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -756,7 +732,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_fullyentangled_5qubit(self):
-        self.setUpClass()
         num_qubits = 5
         p = ql.Program('test_usingqxfullentangled_5qubit', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -840,7 +815,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_fullyentangled_5qubit_10011(self):
-        self.setUpClass()
         num_qubits = 5
         p = ql.Program('test_usingqxfullentangled_5qubit_10011', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -926,7 +900,6 @@ class Test_conjugated_kernel(unittest.TestCase):
         self.assertAlmostEqual(helper_prob(matrix[19+992]), helper_regex(c0)[31], 5)
 
     def test_adding2tothepower6unitary(self):
-        self.setUpClass()
         num_qubits = 6
         p = ql.Program('test_6qubitjustadding', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1075,7 +1048,6 @@ class Test_conjugated_kernel(unittest.TestCase):
     
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_usingqx_sparseunitary(self):
-        self.setUpClass()
         num_qubits = 5
         p = ql.Program('test_usingqxsparseunitary', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1154,7 +1126,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_extremelysparseunitary(self):
-        self.setUpClass()
         num_qubits = 4
         p = ql.Program('test_usingqx_extremelysparseunitary_newname', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1217,7 +1188,6 @@ class Test_conjugated_kernel(unittest.TestCase):
   
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_sparse2qubitunitary(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqx_sparse2qubit', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1247,7 +1217,6 @@ class Test_conjugated_kernel(unittest.TestCase):
   
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_sparse2qubitunitaryotherqubit(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqx_sparse2qubitotherqubit', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1276,7 +1245,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_sparse2qubitunitaryotherqubitcheck(self):
-        self.setUpClass()
         num_qubits = 1
         p = ql.Program('test_usingqx_sparse2qubitotherqubit_test', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1300,7 +1268,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_sparse2qubit_multiplexor(self):
-        self.setUpClass()
         num_qubits = 2
         p = ql.Program('test_usingqx_sparse2qubit_multiplexor', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1329,7 +1296,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_decomposition_rotatedtoffoli(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_usingqx_rotatedtoffoli', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1369,7 +1335,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_decomposition_toffoli(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_usingqx_toffoli', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1408,7 +1373,6 @@ class Test_conjugated_kernel(unittest.TestCase):
 
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_decomposition_controlled_U(self):
-        self.setUpClass()
         num_qubits = 3
         p = ql.Program('test_usingqx_toffoli', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)
@@ -1447,7 +1411,6 @@ class Test_conjugated_kernel(unittest.TestCase):
    
     @unittest.skipIf(qx is None, "qxelarator not installed")
     def test_decomposition_mscthesisaritra(self):
-        self.setUpClass()
         num_qubits = 4
         p = ql.Program('test_usingqx_mscthesisaritra', platform, num_qubits)
         k = ql.Kernel('akernel', platform, num_qubits)

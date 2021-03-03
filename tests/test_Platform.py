@@ -2,13 +2,14 @@ import os
 import unittest
 from openql import openql as ql
 
-curdir = os.path.dirname(__file__)
+curdir = os.path.dirname(os.path.realpath(__file__))
 output_dir = os.path.join(curdir, 'test_output')
 
 class Test_platform(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUp(self):
+        ql.initialize()
         ql.set_option('output_dir', output_dir)
         ql.set_option('optimize', 'no')
         ql.set_option('scheduler', 'ALAP')

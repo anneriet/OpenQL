@@ -3,20 +3,20 @@ import unittest
 from openql import openql as ql
 from utils import file_compare
 
-rootDir = os.path.dirname(os.path.realpath(__file__))
-curdir = os.path.dirname(__file__)
+curdir = os.path.dirname(os.path.realpath(__file__))
 output_dir = os.path.join(curdir, 'test_output')
 
 
 class Test_conjugated_kernel(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUp(self):
+        ql.initialize()
         ql.set_option('output_dir', output_dir)
         ql.set_option('optimize', 'no')
         ql.set_option('scheduler', 'ASAP')
         ql.set_option('log_level', 'LOG_WARNING')
-        ql.set_option('write_qasm_files', 'yes')
+        # ql.set_option('write_qasm_files', 'yes')
 
     def test_conjugate(self):
         config_fn = os.path.join(curdir, 'test_cfg_none_simple.json')
@@ -51,7 +51,7 @@ class Test_conjugated_kernel(unittest.TestCase):
 
         p.compile()
 
-        gold_fn = rootDir + '/golden/test_conjugate.qasm'
+        gold_fn = curdir + '/golden/test_conjugate.qasm'
         qasm_fn = os.path.join(output_dir, p.name+'.qasm')
         self.assertTrue(file_compare(qasm_fn, gold_fn))
 

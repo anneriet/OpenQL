@@ -5,13 +5,13 @@ import numpy as np
 from openql import openql as ql
 from utils import file_compare
 
-rootDir = os.path.dirname(os.path.realpath(__file__))
-curdir = os.path.dirname(__file__)
-output_dir = os.path.join(rootDir, 'test_output')
+curdir = os.path.dirname(os.path.realpath(__file__))
+output_dir = os.path.join(curdir, 'test_output')
 
 class Test_bugs(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUp(self):
+        ql.initialize()
         ql.set_option('output_dir', output_dir)
         ql.set_option('use_default_gates', 'yes')
         ql.set_option('log_level', 'LOG_WARNING')
@@ -19,7 +19,6 @@ class Test_bugs(unittest.TestCase):
     # @unittest.expectedFailure
     # @unittest.skip
     def test_typecast(self):
-        self.setUpClass()
         sweep_points = [1,2]
         num_circuits = 1
         num_qubits = 2
@@ -45,7 +44,6 @@ class Test_bugs(unittest.TestCase):
 
 
     def test_operation_order_190(self):
-        self.setUpClass()
         config_fn = os.path.join(curdir, 'hardware_config_cc_light.json')
         platform = ql.Platform("myPlatform", config_fn)
 
@@ -83,8 +81,10 @@ class Test_bugs(unittest.TestCase):
     # various runs of compiles were generating different results or in the best
     # case strange errors. So multiple (NCOMPILES) runs of compile are executed
     # to make sure there is no error and output generated in all these runs is same
+    # JvS: more likely, it also had to do with the classical register allocator
+    # depending on stuff like Python's garbage collection to free a register.
+    # The register numbers have to be hardcoded now for that reason.
     def test_stateful_behavior(self):
-        self.setUpClass()
         ql.set_option('optimize', 'no')
         ql.set_option('scheduler', 'ALAP')
 
@@ -103,9 +103,9 @@ class Test_bugs(unittest.TestCase):
         k.gate('rx180', [0])
         k.measure(0)
 
-        rd = ql.CReg()
-        rs1 = ql.CReg()
-        rs2 = ql.CReg()
+        rd = ql.CReg(0)
+        rs1 = ql.CReg(1)
+        rs2 = ql.CReg(2)
 
         k.classical(rs1, ql.Operation(3))
         k.classical(rs1, ql.Operation(4))

@@ -2,11 +2,8 @@ import os
 import filecmp
 import unittest
 from openql import openql as ql
-from test_QASM_assembler_present import assemble
 
-rootDir = os.path.dirname(os.path.realpath(__file__))
-
-curdir = os.path.dirname(__file__)
+curdir = os.path.dirname(os.path.realpath(__file__))
 config_fn = os.path.join(curdir, 'hardware_config_qx.json')
 platf = ql.Platform("starmon", config_fn)
 
@@ -26,16 +23,16 @@ def file_compare(fn1, fn2):
 class Test_cqasm(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUp(self):
+        ql.initialize()
         ql.set_option('output_dir', output_dir)
         ql.set_option('optimize', 'no')
         ql.set_option('scheduler', 'ASAP')
         ql.set_option('log_level', 'LOG_INFO')
-        ql.set_option('write_qasm_files', 'yes')
+        # ql.set_option('write_qasm_files', 'yes')
 
 
     def test_cqasm_default_gates(self):
-        self.setUpClass() 
         ql.set_option('use_default_gates', 'yes')
 
         nqubits = 4
@@ -72,17 +69,14 @@ class Test_cqasm(unittest.TestCase):
         p.add_kernel(k)
         p.compile()
 
-        qasm_files = []
-        qasm_files.append(os.path.join(output_dir, p.name+'.qasm'))
-        qasm_files.append(os.path.join(output_dir, p.name+'_scheduled.qasm'))
+        for ext in ('.qasm', '_scheduled.qasm'):
+            GOLD_fn = os.path.join(curdir, 'golden', p.name + ext)
+            QISA_fn = os.path.join(output_dir, p.name + ext)
 
-        for qasm_file in qasm_files:
-            # print('assembling: {}'.format(qasm_file))
-            assemble(qasm_file)
+            self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
     # @unittest.skip
     def test_cqasm_custom_gates(self):
-        self.setUpClass() 
         ql.set_option('use_default_gates', 'no')
 
         nqubits = 4
@@ -119,13 +113,11 @@ class Test_cqasm(unittest.TestCase):
         p.add_kernel(k)
         p.compile()
 
-        qasm_files = []
-        qasm_files.append(os.path.join(output_dir, p.name+'.qasm'))
-        qasm_files.append(os.path.join(output_dir, p.name+'_scheduled.qasm'))
+        for ext in ('.qasm', '_scheduled.qasm'):
+            GOLD_fn = os.path.join(curdir, 'golden', p.name + ext)
+            QISA_fn = os.path.join(output_dir, p.name + ext)
 
-        for qasm_file in qasm_files:
-            print('assembling: {}'.format(qasm_file))
-            assemble(qasm_file)
+            self.assertTrue(file_compare(QISA_fn, GOLD_fn))
 
 if __name__ == '__main__':
     unittest.main()

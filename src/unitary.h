@@ -1,41 +1,29 @@
-/**
- * @file   unitary.h
- * @date   12/2018
- * @author Imran Ashraf
- * @author Anneriet Krol
- * @brief  unitary matrix (decomposition) implementation
+/** \file
+ * Unitary matrix (decomposition) implementation.
  */
 
-#ifndef _UNITARY_H
-#define _UNITARY_H
+#pragma once
 
-#include <complex>
-#include <string>
+#include "utils/num.h"
+#include "utils/str.h"
+#include "utils/vec.h"
+#include "gate.h"
 
-#include <utils.h>
-#include <str.h>
-#include <gate.h>
-#include <exception.h>
+namespace ql {
 
-namespace ql
-{
-
-class unitary
-{
+class unitary {
 public:
-    std::string name;
-    std::vector<std::complex<double>> array;
-    std::vector<std::complex<double>> SU;
-    bool is_decomposed;
-    std::vector<double> instructionlist;
+    utils::Str name;
+    utils::Vec<utils::Complex> array;
+    utils::Vec<utils::Complex> SU;
+    utils::Bool is_decomposed;
+    utils::Vec<utils::Real> instructionlist;
 
     unitary();
-    unitary(std::string name, std::vector<std::complex<double>> array);
-    int size();
+    unitary(const utils::Str &name, const utils::Vec<utils::Complex> &array);
+    utils::int size() const;
     void decompose();
-    static bool is_decompose_support_enabled();
+    static utils::Bool is_decompose_support_enabled();
 };
 
-}
-
-#endif // _UNITARY_H
+} // namespace ql

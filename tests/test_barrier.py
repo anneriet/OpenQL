@@ -3,14 +3,14 @@ import unittest
 from openql import openql as ql
 from utils import file_compare
 
-rootDir = os.path.dirname(os.path.realpath(__file__))
-curdir = os.path.dirname(__file__)
+curdir = os.path.dirname(os.path.realpath(__file__))
 output_dir = os.path.join(curdir, 'test_output')
 
 
 class Test_barrier(unittest.TestCase):
 
     def setUp(self):
+        ql.initialize()
         ql.set_option('output_dir', output_dir)
         ql.set_option('log_level', 'LOG_WARNING')
         ql.set_option('optimize', 'no')
@@ -18,12 +18,11 @@ class Test_barrier(unittest.TestCase):
         ql.set_option('scheduler_post179', 'yes')
         ql.set_option("scheduler_commute", 'no')
         ql.set_option('use_default_gates', 'yes')
-        ql.set_option('write_qasm_files', 'yes')
+        # ql.set_option('write_qasm_files', 'yes')
         
 
     # barrier on specified qubits
     def test_barrier(self):
-        self.setUp()
         config_fn = os.path.join(curdir, 'hardware_config_cc_light.json')
         platform = ql.Platform('seven_qubits_chip', config_fn)
         sweep_points = [1, 2]
@@ -48,12 +47,11 @@ class Test_barrier(unittest.TestCase):
         p.compile()
 
         QISA_fn = os.path.join(output_dir, p.name+'.qisa')
-        gold_fn = rootDir + '/golden/test_barrier.qisa'
+        gold_fn = curdir + '/golden/test_barrier.qisa'
         self.assertTrue(file_compare(QISA_fn, gold_fn))
 
     # barrier on specified qubits with 'wait' and duration = 0
     def test_wait_barrier(self):
-        self.setUp()
         config_fn = os.path.join(curdir, 'hardware_config_cc_light.json')
         platform = ql.Platform('seven_qubits_chip', config_fn)
         sweep_points = [1, 2]
@@ -75,13 +73,12 @@ class Test_barrier(unittest.TestCase):
         p.compile()
 
         QISA_fn = os.path.join(output_dir, p.name+'.qisa')
-        gold_fn = rootDir + '/golden/test_wait_barrier.qisa'
+        gold_fn = curdir + '/golden/test_wait_barrier.qisa'
         self.assertTrue(file_compare(QISA_fn, gold_fn))
 
 
     # barrier on all qubits with barrier
     def test_barrier_all_1(self):
-        self.setUp()
         config_fn = os.path.join(curdir, 'hardware_config_cc_light.json')
         platform = ql.Platform('seven_qubits_chip', config_fn)
         sweep_points = [1, 2]
@@ -121,13 +118,12 @@ class Test_barrier(unittest.TestCase):
 
 
         QASM_fn = os.path.join(output_dir, p.name+'_scheduled.qasm')
-        gold_fn = rootDir + '/golden/test_barrier_all.qasm'
+        gold_fn = curdir + '/golden/test_barrier_all.qasm'
         self.assertTrue(file_compare(QASM_fn, gold_fn))
 
 
     # barrier on all qubits with generalized gate API using 'barrier'
     def test_barrier_all_2(self):
-        self.setUp()
         config_fn = os.path.join(curdir, 'hardware_config_cc_light.json')
         platform = ql.Platform('seven_qubits_chip', config_fn)
         sweep_points = [1, 2]
@@ -166,13 +162,12 @@ class Test_barrier(unittest.TestCase):
         p.compile()
 
         QASM_fn = os.path.join(output_dir, p.name+'_scheduled.qasm')
-        gold_fn = rootDir + '/golden/test_barrier_all.qasm'
+        gold_fn = curdir + '/golden/test_barrier_all.qasm'
         self.assertTrue(file_compare(QASM_fn, gold_fn))
 
 
     # barrier on all qubits with generalized gate API using wait with duration 0
     def test_barrier_all_3(self):
-        self.setUp()
         config_fn = os.path.join(curdir, 'hardware_config_cc_light.json')
         platform = ql.Platform('seven_qubits_chip', config_fn)
         sweep_points = [1, 2]
@@ -211,7 +206,7 @@ class Test_barrier(unittest.TestCase):
         p.compile()
 
         QASM_fn = os.path.join(output_dir, p.name+'_scheduled.qasm')
-        gold_fn = rootDir + '/golden/test_barrier_all.qasm'
+        gold_fn = curdir + '/golden/test_barrier_all.qasm'
         self.assertTrue(file_compare(QASM_fn, gold_fn))
 
 if __name__ == '__main__':

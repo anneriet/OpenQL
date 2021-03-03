@@ -19,7 +19,8 @@ all_qubits = range(0, num_qubits)
 class Test_central_controller(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUp(self):
+        ql.initialize()
         ql.set_option('output_dir', output_dir)
         ql.set_option('optimize', 'no')
         ql.set_option('scheduler', 'ALAP')
@@ -36,9 +37,9 @@ class Test_central_controller(unittest.TestCase):
         k1.gate('cz', [6, 7])
 
         # create classical registers
-        rd = ql.CReg()
-        rs1 = ql.CReg()
-        rs2 = ql.CReg()
+        rd = ql.CReg(1)
+        rs1 = ql.CReg(2)
+        rs2 = ql.CReg(3)
 
         if 0:
             # add/sub/and/or/xor
@@ -100,8 +101,8 @@ class Test_central_controller(unittest.TestCase):
         zW = z-1
 
         # create classical registers
-        rdX = ql.CReg()
-        rdZ = ql.CReg()
+        rdX = ql.CReg(1)
+        rdZ = ql.CReg(2)
 
         # X stabilizers
         k.gate("rym90", [x])
