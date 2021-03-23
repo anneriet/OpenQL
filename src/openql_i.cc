@@ -458,20 +458,21 @@ void Program::add_for(const Kernel &k, size_t iterations) {
 void Program::add_for(const Program &p, size_t iterations) {
     program->add_for( *(p.program), iterations);
 }
-void Program::declare(const std::string &param_type, const std::string &param_name="") {
-    program->declare(param_type, param_name);
-}
 void Program::compile() {
     //program->compile();
     program->compile_modular();
 }
 
 std::string Program::microcode() const {
-#if OPT_MICRO_CODE
-    return program->microcode();
-#else
-    return std::string("microcode disabled");
-#endif
+// #if OPT_MICRO_CODE
+std::string qasm_str;
+for(ql::quantum_kernel k : program->get_kernels()){
+    qasm_str += k.qasm();
+}
+return qasm_str;
+// #else
+    // return std::string("microcode disabled");
+// #endif
 }
 
 void Program::print_interaction_matrix() const {
@@ -555,3 +556,29 @@ void Compiler::set_pass_option(
     QL_DOUT(" Set option " << optionName << " = " << optionValue << " for pass " << passName);
     compiler->setPassOption(passName,optionName, optionValue);
 }
+
+
+// QParam::QParam(const std::string &typeStr): typeStr(typeStr){
+//         QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+//         // param = new ql::cparam(typeStr);
+//     }
+
+    // Param(std::string typeStr, std::string name);
+    // Param(std::string typeStr, std::string name, int value);
+    // Param(std::string typeStr, std::string name, double value);
+    // Param(std::string typeStr, std::string name, std::complex<double> value);
+    // Param(std::string typeStr, int value);
+    // Param(std::string typeStr, double value);
+    // Param(std::string typeStr, std::complex<double> value);
+    // int id;
+    // parameter_type_t type() const;
+    // void print() const;
+    // std::string parameter_name;
+
+// QParam::~QParam(){    // std::cout << "program::~program()" << std::endl;
+//     // leave deletion to SWIG, otherwise the python unit test framework fails
+//     // FIXME JvS: above is impressively broken, this just means it's never
+//     //  deleted. It's not like SWIG has some magical garbage collector or
+//     //  something.
+//     //delete(program);
+//     };

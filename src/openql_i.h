@@ -9,6 +9,7 @@
 #include "unitary.h"
 #include "compiler.h"
 #include "options.h"
+// #include "param.h"
 
 void initialize();
 
@@ -229,4 +230,27 @@ public:
         const std::string &optionName,
         const std::string &optionValue
     );
+
 };
+// enum class parameter_type_t {
+//     PBOOL, PINT, PREAL, PCOMPLEX
+// };
+
+// class QParam {
+// public:
+//     // ql::cparam *param;
+//     QParam(const std::string &typeStr);
+//     // Param(std::string typeStr, std::string name);
+//     // Param(std::string typeStr, std::string name, int value);
+//     // Param(std::string typeStr, std::string name, double value);
+//     // Param(std::string typeStr, std::string name, std::complex<double> value);
+//     // Param(std::string typeStr, int value);
+//     // Param(std::string typeStr, double value);
+//     // Param(std::string typeStr, std::complex<double> value);
+//     // int id;
+//     // parameter_type_t type() const;
+//     std::string typeStr;
+//     // void print() const;
+//     // std::string parameter_name;
+//     ~QParam();
+// };

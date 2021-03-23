@@ -948,5 +948,18 @@ arg3 : str
     value of the option. 
 """
 
+
+// %feature("docstring") QParam
+// """ Parameter class."""
+
+// %feature("docstring") QParam::QParam
+// """ Constructs a parameter object.
+
+// Parameters
+// ----------
+// arg1 : str
+//     type of the parameter
+// """
+
 // Include the header file with above prototypes
 %include "openql_i.h"
