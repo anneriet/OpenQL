@@ -9,7 +9,7 @@
 #include "unitary.h"
 #include "compiler.h"
 #include "options.h"
-// #include "param.h"
+#include "param.h"
 
 void initialize();
 
@@ -187,8 +187,7 @@ public:
     void add_do_while(const Program &p, const Operation &operation);
     void add_for(const Kernel &k, size_t iterations);
     void add_for(const Program &p, size_t iterations);
-    void declare(const std::string &param_type, const std::string &param_name);
-
+    
     void compile();
     std::string microcode() const;
     void print_interaction_matrix() const;
@@ -232,25 +231,33 @@ public:
     );
 
 };
-// enum class parameter_type_t {
-//     PBOOL, PINT, PREAL, PCOMPLEX
-// };
+enum class parameter_type_t {
+    PBOOL, PINT, PREAL, PCOMPLEX
+};
 
-// class QParam {
-// public:
-//     // ql::cparam *param;
-//     QParam(const std::string &typeStr);
-//     // Param(std::string typeStr, std::string name);
-//     // Param(std::string typeStr, std::string name, int value);
-//     // Param(std::string typeStr, std::string name, double value);
-//     // Param(std::string typeStr, std::string name, std::complex<double> value);
-//     // Param(std::string typeStr, int value);
-//     // Param(std::string typeStr, double value);
-//     // Param(std::string typeStr, std::complex<double> value);
-//     // int id;
-//     // parameter_type_t type() const;
-//     std::string typeStr;
-//     // void print() const;
-//     // std::string parameter_name;
-//     ~QParam();
-// };
+class Param {
+public:
+    ql::cparam *param;
+
+    Param(const std::string &typeStr);
+    Param(const std::string &typeStr, const std::string &name);
+    Param(const std::string &typeStr, const std::string &name, int value);
+    Param(const std::string &typeStr, const std::string &name, double value);
+    Param(const std::string &typeStr, const std::string &name, std::complex<double> value);
+    Param(const std::string &typeStr, int value);
+    Param(const std::string &typeStr, double value);
+    Param(const std::string &typeStr, std::complex<double> value);
+
+    std::string name;
+    std::string typeStr;
+    int bool_value = 0;
+    int int_value = 0;
+    double real_value = 0.0;  
+
+    // parameter_type_t type();
+    void qasm();
+
+    int value; // TODO: Change this to an actual function that returns something!
+
+    ~Param();
+};

@@ -557,28 +557,61 @@ void Compiler::set_pass_option(
     compiler->setPassOption(passName,optionName, optionValue);
 }
 
+// C+++ Interfaces?
+Param::Param(const std::string &typeStr) : typeStr(typeStr){
+        QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+        if(typeStr.compare("INT") ){
+            new ql::PInt();
+        }
+        param = new ql::cparam(typeStr);
+    }
 
-// QParam::QParam(const std::string &typeStr): typeStr(typeStr){
-//         QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
-//         // param = new ql::cparam(typeStr);
-//     }
+Param::Param(const std::string &typeStr, const std::string &name) : typeStr(typeStr){
+    QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+        param = new ql::cparam(typeStr, name);
+    }
 
-    // Param(std::string typeStr, std::string name);
-    // Param(std::string typeStr, std::string name, int value);
-    // Param(std::string typeStr, std::string name, double value);
-    // Param(std::string typeStr, std::string name, std::complex<double> value);
-    // Param(std::string typeStr, int value);
-    // Param(std::string typeStr, double value);
-    // Param(std::string typeStr, std::complex<double> value);
+Param::Param(const std::string &typeStr, const std::string &name, int value) : typeStr(typeStr){
+    QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+        param = new ql::cparam(typeStr, name, value);
+    }
+
+Param::Param(const std::string &typeStr, const std::string &name, double value){
+    QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+        param = new ql::cparam(typeStr, name, value);
+    }
+
+Param::Param(const std::string &typeStr, const std::string &name, std::complex<double> value){
+    QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+        param = new ql::cparam(typeStr, name, value);
+    }
+
+Param::Param(const std::string &typeStr, int value){
+    QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+        param = new ql::cparam(typeStr, value);
+    }
+    
+Param::Param(const std::string &typeStr, double value){
+    QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+        param = new ql::cparam(typeStr, value);
+    }
+Param::Param(const std::string &typeStr, std::complex<double> value){
+    QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
+        param = new ql::cparam(typeStr, value);
+    }
+
     // int id;
     // parameter_type_t type() const;
-    // void print() const;
+void Param::qasm()
+    {
+        param->qasm();
+    };
     // std::string parameter_name;
 
-// QParam::~QParam(){    // std::cout << "program::~program()" << std::endl;
-//     // leave deletion to SWIG, otherwise the python unit test framework fails
-//     // FIXME JvS: above is impressively broken, this just means it's never
-//     //  deleted. It's not like SWIG has some magical garbage collector or
-//     //  something.
-//     //delete(program);
-//     };
+Param::~Param(){    // std::cout << "program::~program()" << std::endl;
+    // leave deletion to SWIG, otherwise the python unit test framework fails
+    // FIXME JvS: above is impressively broken, this just means it's never
+    //  deleted. It's not like SWIG has some magical garbage collector or
+    //  something.
+    //delete(program);
+    };

@@ -48,7 +48,6 @@ public:
     void add_do_while(const quantum_program &p, const operation &cond);
     void add_for(const quantum_kernel &k, utils::UInt iterations);
     void add_for(const quantum_program &p, utils::UInt iterations);
-    void declare(const utils::Str &param_type, const utils::Str &param_name);
     void set_config_file(const utils::Str &file_name);
     void set_platform(const quantum_platform &platform);
 

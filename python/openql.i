@@ -812,17 +812,6 @@ arg2: int
     iteration count
 """
 
-%feature("docstring") Program::declare
-""" Declaration of a parameter of the specified type
-
-Parameters
-----------
-arg1 : String
-    type of the parameter
-arg2: String
-    name of the parameter
-"""
-
 %feature("docstring") Program::compile
 """ Compiles the program
 
@@ -841,8 +830,7 @@ None
 
 Returns
 -------
-str
-    qasm
+None
 """
 
 
@@ -949,17 +937,132 @@ arg3 : str
 """
 
 
-// %feature("docstring") QParam
-// """ Parameter class."""
+%feature("docstring") Param
+""" Parameter class."""
 
-// %feature("docstring") QParam::QParam
-// """ Constructs a parameter object.
+%feature("docstring") Param::Param
+""" Constructs a parameter object.
+
+Parameters
+----------
+arg1 : str
+    type of the parameter
+"""
+
+%feature("docstring") Param::Param
+""" Constructs a parameter object.
+
+Parameters
+----------
+arg1 : str
+    type of the parameter
+arg2 : str
+    name of the parameter
+"""
+
+%feature("docstring") Param::Param
+""" Constructs a parameter object.
+
+Parameters
+----------
+arg1 : str
+    type of the parameter
+arg2 : str
+    name of the parameter
+arg3 : int
+    value
+"""
+
+%feature("docstring") Param::Param
+""" Constructs a parameter object.
+
+Parameters
+----------
+arg1 : str
+    type of the parameter
+arg2 : str
+    name of the parameter
+arg3 : double
+    value
+"""
+
+%feature("docstring") Param::Param
+""" Constructs a parameter object.
+
+Parameters
+----------
+arg1 : str
+    type of the parameter
+arg2 : str
+    name of the parameter
+arg3 : complex
+    value
+"""
+
+%feature("docstring") Param::Param
+""" Constructs a parameter object.
+
+Parameters
+----------
+arg1 : str
+    type of the parameter
+arg2 : int
+    value
+"""
+
+%feature("docstring") Param::Param
+""" Constructs a parameter object.
+
+Parameters
+----------
+arg1 : str
+    type of the parameter
+arg2 : double
+    value
+"""
+
+%feature("docstring") Param::Param
+""" Constructs a parameter object.
+
+Parameters
+----------
+arg1 : str
+    type of the parameter
+arg2 : complex
+    value
+"""
+
+%feature("docstring") Param::qasm
+""" Generates and returns parameter QASM
+
+Parameters
+----------
+None
+
+Returns
+-------
+None    
+"""
+
+%feature("docstring") Param::value
+""" Parameter value """
+
+
+// %feature("docstring") Param::type
+// """ Returns parameter type
 
 // Parameters
 // ----------
-// arg1 : str
-//     type of the parameter
+// None
+
+// Returns
+// -------
+// enum    
 // """
+
+// %feature("docstring") Param::name
+// """ Returns parameter name """
+
 
 // Include the header file with above prototypes
 %include "openql_i.h"
