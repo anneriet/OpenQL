@@ -143,8 +143,12 @@ void Kernel::identity(size_t q0) {
     kernel->identity(q0);
 }
 
-void Kernel::hadamard(size_t q0) {
-    kernel->hadamard(q0);
+// void Kernel::hadamard(size_t q0) {
+//     kernel->hadamard(q0);
+// }
+
+void Kernel::hadamard(Param p0) {
+    kernel->hadamard(p0.param);
 }
 
 void Kernel::s(size_t q0) {
@@ -363,6 +367,7 @@ void Kernel::gate(const Unitary &u, const std::vector<size_t> &qubits) {
     kernel->gate(*(u.unitary), {qubits.begin(), qubits.end()});
 }
 
+
 void Kernel::classical(const CReg &destination, const Operation &operation) {
     kernel->classical(*(destination.creg), *(operation.operation));
 }
@@ -560,9 +565,9 @@ void Compiler::set_pass_option(
 // C+++ Interfaces?
 Param::Param(const std::string &typeStr) : typeStr(typeStr){
         QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
-        if(typeStr.compare("INT") ){
-            new ql::PInt();
-        }
+        // if(typeStr.compare("INT") ){
+        //     paramtemp = new ql::PInt();
+        // }
         param = new ql::cparam(typeStr);
     }
 
@@ -599,6 +604,10 @@ Param::Param(const std::string &typeStr, std::complex<double> value){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, value);
     }
+void Param::set_value(int val)
+    {
+        param->int_value = val;
+    };
 
     // int id;
     // parameter_type_t type() const;

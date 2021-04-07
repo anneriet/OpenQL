@@ -86,12 +86,12 @@ const char* cparam::paramnamerand() {
 
 
 
-PInt::PInt() : ParamTemp<utils::UInt>(){
+PInt::PInt() : ParamTemp(){
     name = PInt::paramnamerand();
     QL_DOUT("Parameter: |- type     : " << "Int" << "\n\t |- name     : " << name);
  }
 
-PInt::PInt(const utils::UInt &value) : ParamTemp<utils::UInt>(value){ };
+PInt::PInt(const utils::UInt &value) : ParamTemp(){ };
 
 utils::Str PInt::toString()  {
     std::stringstream strm;
@@ -100,8 +100,7 @@ utils::Str PInt::toString()  {
 };
 
 // Return a random parametername.
-template<typename Type>
-utils::Str ParamTemp<Type>::paramnamerand() {
+utils::Str ParamTemp::paramnamerand() {
       static char randomid[9];
       for (unsigned int k = 0; k<8; ++k) {
         const int v = (int)std::rand()%3;

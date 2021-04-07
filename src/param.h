@@ -30,9 +30,9 @@ public:
     cparam(utils::Str typeStr, utils::Complex value);
 
     utils::Str name;
-    utils::Int bool_value = 0;
-    utils::UInt int_value = 0;
-    utils::Real real_value = 0.0;  
+    utils::Int bool_value;
+    utils::UInt int_value = -1;
+    utils::Real real_value;  
 
     utils::Str typeStr;
     parameter_type_t type();
@@ -43,28 +43,28 @@ private:
     const char* paramnamerand(); 
 };
 
-template<typename Type>
 class ParamTemp{
     protected:
-        Type value;
-        utils::Str name;
         utils::Str paramnamerand();
     public:
+    utils::Str name;
     ParamTemp(){ };
-    ParamTemp(const Type& initValue) :  value(initValue){ };
+    // ParamTemp(const Type& initValue) :  value(initValue){ };
     // Type Param(const utils::Str name, const Type& initValue);
     // virtual utils::Str toString() const;
 };
 
-class PInt : public ParamTemp<utils::UInt>{
-//     private:
+class PInt : public ParamTemp{
+    private:
 //         // utils::Str paramnamerand();
 //         // utils::Str name;
-//         // utils::UInt value;
     public:
         PInt();
         PInt(const utils::UInt &value);
 
         utils::Str toString();
+        utils::UInt value = -1;
+
+        
 };
 } // namespace ql

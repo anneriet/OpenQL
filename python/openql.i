@@ -302,13 +302,22 @@ arg1 : int
 """
 
 
+// %feature("docstring") Kernel::hadamard
+// """ Applies hadamard on the qubit specified in argument.
+
+// Parameters
+// ----------
+// arg1 : int
+//     target qubit
+// """
+
 %feature("docstring") Kernel::hadamard
 """ Applies hadamard on the qubit specified in argument.
 
 Parameters
 ----------
-arg1 : int
-    target qubit
+arg1 : Param
+    target qubit parameter
 """
 
 %feature("docstring") Kernel::s
@@ -1044,9 +1053,13 @@ Returns
 None    
 """
 
-%feature("docstring") Param::value
-""" Parameter value """
-
+%feature("docstring") Param::set_value
+""" Parameter value 
+Parameters
+----------
+arg1 : int
+    type of the parameter
+"""
 
 // %feature("docstring") Param::type
 // """ Returns parameter type

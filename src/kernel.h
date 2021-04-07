@@ -14,6 +14,7 @@
 #include "hardware_configuration.h"
 #include "unitary.h"
 #include "platform.h"
+#include "param.h"
 
 namespace ql {
 
@@ -63,6 +64,7 @@ public:
 
     void identity(utils::UInt qubit);
     void i(utils::UInt qubit);
+    void hadamard(ql::cparam *qubit);
     void hadamard(utils::UInt qubit);
     void h(utils::UInt qubit);
     void rx(utils::UInt qubit, utils::Real angle);
@@ -93,6 +95,8 @@ public:
     void display();
     void clifford(utils::Int id, utils::UInt qubit=0);
 
+    
+    void gate(const utils::Str &gname, PInt q0);
 private:
     // a default gate is the last resort of user gate resolution and is of a build-in form, as below in the code;
     // the "using_default_gates" option can be used to enable ("yes") or disable ("no") default gates;
@@ -191,6 +195,7 @@ public:
     // to add unitary to kernel
     void gate(const unitary &u, const utils::Vec<utils::UInt> &qubits);
 
+    // void gate(const utils::Str &gname, PInt &q0);
     // terminology:
     // - composite/custom/default (in decreasing order of priority during lookup in the gate definition):
     //      - composite gate: a gate definition with subinstructions; when matched, decompose and add the subinstructions

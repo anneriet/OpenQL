@@ -65,6 +65,41 @@ public:
     static bool is_decompose_support_enabled();
 };
 
+enum class parameter_type_t {
+    PBOOL, PINT, PREAL, PCOMPLEX
+};
+
+class Param {
+public:
+    ql::cparam *param;
+
+    // ql::ParamTemp paramtemp;
+    Param(const std::string &typeStr);
+    Param(const std::string &typeStr, const std::string &name);
+    Param(const std::string &typeStr, const std::string &name, int value);
+    Param(const std::string &typeStr, const std::string &name, double value);
+    Param(const std::string &typeStr, const std::string &name, std::complex<double> value);
+    Param(const std::string &typeStr, int value);
+    Param(const std::string &typeStr, double value);
+    Param(const std::string &typeStr, std::complex<double> value);
+
+    std::string name;
+    std::string typeStr;
+    int bool_value;
+    size_t int_value;
+    double real_value;  
+
+    // parameter_type_t type();
+    void qasm();
+
+    void set_value(int val); // TODO: Change this to an actual function that returns something!
+    // operator int() const {return  value;}
+    // operator size_t() const {return 2;}
+   // operator std::vector<size_t>() {return int_value;}
+    ~Param();
+};
+
+
 /**
  * quantum kernel interface
  */
@@ -150,6 +185,7 @@ public:
         const std::vector<size_t> &ancilla_qubits
     );
     void conjugate(const Kernel &k);
+    void hadamard(Param q0);
     ~Kernel();
 };
 
@@ -230,34 +266,4 @@ public:
         const std::string &optionValue
     );
 
-};
-enum class parameter_type_t {
-    PBOOL, PINT, PREAL, PCOMPLEX
-};
-
-class Param {
-public:
-    ql::cparam *param;
-
-    Param(const std::string &typeStr);
-    Param(const std::string &typeStr, const std::string &name);
-    Param(const std::string &typeStr, const std::string &name, int value);
-    Param(const std::string &typeStr, const std::string &name, double value);
-    Param(const std::string &typeStr, const std::string &name, std::complex<double> value);
-    Param(const std::string &typeStr, int value);
-    Param(const std::string &typeStr, double value);
-    Param(const std::string &typeStr, std::complex<double> value);
-
-    std::string name;
-    std::string typeStr;
-    int bool_value = 0;
-    int int_value = 0;
-    double real_value = 0.0;  
-
-    // parameter_type_t type();
-    void qasm();
-
-    int value; // TODO: Change this to an actual function that returns something!
-
-    ~Param();
 };
