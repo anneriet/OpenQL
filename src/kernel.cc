@@ -99,21 +99,22 @@ void quantum_kernel::i(UInt qubit) {
     gate("identity", qubit);
 }
 
-// void quantum_kernel::hadamard(UInt qubit) {
-//     gate("hadamard", qubit);
-// }
-void quantum_kernel::hadamard(ql::cparam *qubit_p) {
-    if(qubit_p->int_value >= 0)
+void quantum_kernel::hadamard(UInt qubit) {
+    gate("hadamard", qubit);
+}
+void quantum_kernel::hadamard(const ql::cparam *qubit_p) {
+    // QL_EOUT("Help no value for qubit parameter: "<< qubit_p->int_value);
+    if(qubit_p->assigned)
     {
         gate("hadamard", qubit_p->int_value);
     }
     else
     {
-        QL_EOUT("Help no value for qubit parameter");
+        QL_EOUT("Help no value for qubit parameter: "<< qubit_p->name);
     }
 }   
 void quantum_kernel::h(UInt qubit) {
-    // hadamard(qubit);
+    hadamard(qubit);
 }
 
 void quantum_kernel::rx(UInt qubit, Real angle) {
@@ -1162,13 +1163,70 @@ void quantum_kernel::multicontrolled_ry(
     cycles_valid = false;
 }
 
-// void gate(const utils::Str &gname, ql::cparam q0)
+// Parameters
+// void quantum_kernel::gate(const utils::Str &gname, const ql::cparam * q0, 
+//         const utils::Vec<utils::UInt> &cregs,
+//         utils::UInt duration,
+//         utils::Real angle,
+//         const utils::Vec<utils::UInt> &bregs,
+//         cond_type_t gcond,
+//         const utils::Vec<utils::UInt> &gcondregs
+//     )
 // {
-//     if(q0.int_value){
-//         gate(gname, Vec<UInt> {q0});
-//         QL_DOUT("qubit num value of parameter: " << q0.name << "was added with vvalue: " << q0.int_value);
+
+//     if(q0->assigned)
+//     {
+//         Vec<UInt> lqubits = {q0->int_value};
+//     QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+
+//         auto lcregs = cregs;
+//         auto lbregs = bregs;
+//         gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
 //     }
-// }
+//     else
+//     {
+        
+//         const utils::Str qasmline = gname + " %" + q0->name;
+//         QL_DOUT("Parameterized gate: " << qasmline);
+//         c.push_back(new ql::parameterized_gate(qasmline));
+//     }
+// };
+void quantum_kernel::gate(const utils::Str &gname, const ql::cparam * q0, const ql::cparam * q1,
+        const utils::Vec<utils::UInt> &cregs,
+        utils::UInt duration,
+        utils::Real angle,
+        const utils::Vec<utils::UInt> &bregs,
+        cond_type_t gcond,
+        const utils::Vec<utils::UInt> &gcondregs)
+{
+    if(q0->assigned)
+    {
+        Vec<UInt> lqubits = {q0->int_value};
+
+        auto lcregs = cregs;
+        auto lbregs = bregs;
+        if(q1->assigned) // Two qubit gate
+        {
+                lqubits.push_back(q1->int_value);
+        }
+    QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+
+        gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
+    }
+    else
+    {
+        StrStrm qasmline;
+        qasmline << gname << " %" << q0->name;
+        if(q1 != nullptr)
+        {
+            qasmline << " %" << q1->name;
+        }
+        
+        QL_DOUT("Parameterized gate: " << qasmline.str());
+        c.push_back(new ql::parameterized_gate(qasmline.str()));
+    }
+};
+
 
 /**
  * qasm output
@@ -1286,22 +1344,22 @@ void quantum_kernel::controlled_z(UInt tq, UInt cq) {
     // from: https://arxiv.org/pdf/1206.0758v3.pdf
     // A meet-in-the-middle algorithm for fast synthesis
     // of depth-optimal quantum circuits
-    // hadamard(tq);
-    // cnot(cq, tq);
-    // hadamard(tq);
+    hadamard(tq);
+    cnot(cq, tq);
+    hadamard(tq);
 }
 
 void quantum_kernel::controlled_h(UInt tq, UInt cq) {
     // from: https://arxiv.org/pdf/1206.0758v3.pdf
     // A meet-in-the-middle algorithm for fast synthesis
     // of depth-optimal quantum circuits
-    // s(tq);
-    // hadamard(tq);
-    // t(tq);
-    // cnot(cq, tq);
-    // tdag(tq);
-    // hadamard(tq);
-    // sdag(tq);
+    s(tq);
+    hadamard(tq);
+    t(tq);
+    cnot(cq, tq);
+    tdag(tq);
+    hadamard(tq);
+    sdag(tq);
 }
 
 void quantum_kernel::controlled_i(UInt tq, UInt cq) {
@@ -1341,33 +1399,33 @@ void quantum_kernel::controlled_t(UInt tq, UInt cq, UInt aq) {
     // from: https://arxiv.org/pdf/1206.0758v3.pdf
     // A meet-in-the-middle algorithm for fast synthesis
     // of depth-optimal quantum circuits
-    // cnot(cq, tq);
-    // hadamard(aq);
-    // sdag(cq);
-    // cnot(tq, aq);
-    // cnot(aq, cq);
-    // t(cq);
-    // tdag(aq);
-    // cnot(tq, cq);
-    // cnot(tq, aq);
-    // t(cq);
-    // tdag(aq);
-    // cnot(aq, cq);
-    // h(cq);
-    // t(cq);
-    // h(cq);
-    // cnot(aq, cq);
-    // tdag(cq);
-    // t(aq);
-    // cnot(tq, aq);
-    // cnot(tq, cq);
-    // t(aq);
-    // tdag(cq);
-    // cnot(aq, cq);
-    // s(cq);
-    // cnot(tq, aq);
-    // cnot(cq, tq);
-    // h(aq);
+    cnot(cq, tq);
+    hadamard(aq);
+    sdag(cq);
+    cnot(tq, aq);
+    cnot(aq, cq);
+    t(cq);
+    tdag(aq);
+    cnot(tq, cq);
+    cnot(tq, aq);
+    t(cq);
+    tdag(aq);
+    cnot(aq, cq);
+    h(cq);
+    t(cq);
+    h(cq);
+    cnot(aq, cq);
+    tdag(cq);
+    t(aq);
+    cnot(tq, aq);
+    cnot(tq, cq);
+    t(aq);
+    tdag(cq);
+    cnot(aq, cq);
+    s(cq);
+    cnot(tq, aq);
+    cnot(cq, tq);
+    h(aq);
 }
 
 void quantum_kernel::controlled_tdag(UInt tq, UInt cq, UInt aq) {

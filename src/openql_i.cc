@@ -143,12 +143,12 @@ void Kernel::identity(size_t q0) {
     kernel->identity(q0);
 }
 
-// void Kernel::hadamard(size_t q0) {
-//     kernel->hadamard(q0);
-// }
+void Kernel::hadamard(size_t q0) {
+    kernel->hadamard(q0);
+}
 
-void Kernel::hadamard(Param p0) {
-    kernel->hadamard(p0.param);
+void Kernel::hadamard(const Param &p0) {
+    kernel->hadamard(p0.get_param());
 }
 
 void Kernel::s(size_t q0) {
@@ -388,6 +388,88 @@ void Kernel::conjugate(const Kernel &k) {
     kernel->conjugate(k.kernel);
 }
 
+void Kernel::gate(
+    const std::string &name,
+    const Param &p0,
+    size_t duration,
+    double angle,
+    const std::vector<size_t> &bregs,
+    const std::string &condstring,
+    const std::vector<size_t> &condregs
+) {
+    QL_DOUT(
+        "Python k.gate("
+        << name
+        << ", "
+        << p0.name
+        << ", "
+        << duration
+        << ", "
+        << angle
+        << ", "
+        << ql::utils::Vec<size_t>(bregs.begin(), bregs.end())
+        << ", "
+        << condstring
+        << ", "
+        << ql::utils::Vec<size_t>(condregs.begin(), condregs.end())
+        << ")"
+    );
+    ql::cond_type_t condvalue = kernel->condstr2condvalue(condstring);
+
+    kernel->gate(
+        name,
+        p0.get_param(),
+        {},
+        {},
+        duration,
+        angle,
+        {bregs.begin(), bregs.end()},
+        condvalue,
+        {condregs.begin(), condregs.end()}
+    );
+}
+void Kernel::gate(
+    const std::string &name,
+    const Param &p0,
+    const Param &p1,
+    size_t duration,
+    double angle,
+    const std::vector<size_t> &bregs,
+    const std::string &condstring,
+    const std::vector<size_t> &condregs
+) {
+    QL_DOUT(
+        "Python k.gate("
+        << name
+        << ", "
+        << p0.name
+        << ", "
+        << duration
+        << ", "
+        << angle
+        << ", "
+        << ql::utils::Vec<size_t>(bregs.begin(), bregs.end())
+        << ", "
+        << condstring
+        << ", "
+        << ql::utils::Vec<size_t>(condregs.begin(), condregs.end())
+        << ")"
+    );
+    ql::cond_type_t condvalue = kernel->condstr2condvalue(condstring);
+
+    kernel->gate(
+        name,
+        p0.get_param(),
+        p1.get_param(),
+        {},
+        duration,
+        angle,
+        {bregs.begin(), bregs.end()},
+        condvalue,
+        {condregs.begin(), condregs.end()}
+    );
+}
+
 Kernel::~Kernel() {
     delete(kernel);
 }
@@ -606,8 +688,16 @@ Param::Param(const std::string &typeStr, std::complex<double> value){
     }
 void Param::set_value(int val)
     {
+        QL_DOUT("Param of value: "<< val<< "");
         param->int_value = val;
+        param->assigned = true;
     };
+
+ql::cparam* Param::get_param() const{
+    if(name != "") param->name = name;
+    if(param->assigned) param->int_value = int_value;
+    return param;
+}
 
     // int id;
     // parameter_type_t type() const;

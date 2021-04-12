@@ -64,7 +64,7 @@ public:
 
     void identity(utils::UInt qubit);
     void i(utils::UInt qubit);
-    void hadamard(ql::cparam *qubit);
+    void hadamard(const ql::cparam *qubit);
     void hadamard(utils::UInt qubit);
     void h(utils::UInt qubit);
     void rx(utils::UInt qubit, utils::Real angle);
@@ -195,7 +195,16 @@ public:
     // to add unitary to kernel
     void gate(const unitary &u, const utils::Vec<utils::UInt> &qubits);
 
-    // void gate(const utils::Str &gname, PInt &q0);
+    // Parameters
+    void gate(const utils::Str &gname, const ql::cparam * q0, 
+        const ql::cparam * q1 = {}, 
+        const utils::Vec<utils::UInt> &cregs = {},
+        utils::UInt duration = 0,
+        utils::Real angle = 0.0,
+        const utils::Vec<utils::UInt> &bregs = {},
+        cond_type_t gcond = cond_always,
+        const utils::Vec<utils::UInt> &gcondregs = {}
+    );
     // terminology:
     // - composite/custom/default (in decreasing order of priority during lookup in the gate definition):
     //      - composite gate: a gate definition with subinstructions; when matched, decompose and add the subinstructions

@@ -20,6 +20,7 @@ enum class parameter_type_t {
  */
 class cparam {
 public:
+    utils::Bool assigned = false;
     cparam(utils::Str typeStr);
     cparam(utils::Str typeStr, utils::Str name);
     // cparam(utils::Str typeStr, utils::Str name, utils::UInt value);
@@ -31,7 +32,7 @@ public:
 
     utils::Str name;
     utils::Int bool_value;
-    utils::UInt int_value = -1;
+    utils::UInt int_value;
     utils::Real real_value;  
 
     utils::Str typeStr;

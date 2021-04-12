@@ -780,6 +780,21 @@ cmat_t custom_gate::mat() const {
     return m;
 }
 
+
+parameterized_gate::parameterized_gate(const utils::Str &name)  : custom_gate(name)
+{
+    duration = 0;
+}
+instruction_t parameterized_gate::qasm() const
+{
+    return instruction_t(name);
+}
+
+// gate_type_t parameterized_gate::type() const{
+//     return __parameterized_gate__;
+// }
+    // cmat_t mat() const override;
+
 composite_gate::composite_gate(const Str &name) : custom_gate(name) {
     duration = 0;
 }

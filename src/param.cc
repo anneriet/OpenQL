@@ -25,19 +25,19 @@ cparam::cparam(utils::Str typeStr, utils::Str name)  : typeStr(typeStr) , name(n
 //     typeStr_ = typeStr;
 //     name = name;
 // }
-cparam::cparam(utils::Str typeStr, utils::Str name, utils::Real value) : typeStr(typeStr) , name(name){
+cparam::cparam(utils::Str typeStr, utils::Str name, utils::Real value) : typeStr(typeStr) , name(name), assigned(true){
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name);
 }
-cparam::cparam(utils::Str typeStr, utils::Str name, utils::Complex value) : typeStr(typeStr) , name(name){
+cparam::cparam(utils::Str typeStr, utils::Str name, utils::Complex value) : typeStr(typeStr) , name(name), assigned(true){
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name);
 }
 // cparam::cparam(utils::Str typeStr, utils::UInt value) : typeStr(typeStr){
 // }
-cparam::cparam(utils::Str typeStr, utils::Real value) : typeStr(typeStr){
+cparam::cparam(utils::Str typeStr, utils::Real value) : typeStr(typeStr), assigned(true){
     name = paramnamerand();
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name);
 }
-cparam::cparam(utils::Str typeStr, utils::Complex value) : typeStr(typeStr){
+cparam::cparam(utils::Str typeStr, utils::Complex value) : typeStr(typeStr), assigned(true){
     name = paramnamerand();
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name);
 }

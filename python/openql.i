@@ -302,14 +302,14 @@ arg1 : int
 """
 
 
-// %feature("docstring") Kernel::hadamard
-// """ Applies hadamard on the qubit specified in argument.
+%feature("docstring") Kernel::hadamard
+""" Applies hadamard on the qubit specified in argument.
 
-// Parameters
-// ----------
-// arg1 : int
-//     target qubit
-// """
+Parameters
+----------
+arg1 : int
+    target qubit
+"""
 
 %feature("docstring") Kernel::hadamard
 """ Applies hadamard on the qubit specified in argument.
@@ -567,6 +567,28 @@ arg7 : []
     list of condition registers (default: [])
 """
 
+%feature("docstring") Kernel::gate
+""" adds custom/default gates to kernel.
+
+Parameters
+----------
+arg1 : str
+    name of gate
+arg2 : Param
+    target qubit parameter
+arg3 : Param
+    target qubit parameter
+arg4 : int
+    duration in ns (default: 0)
+arg5 : double
+    angle of rotation, used internally only for rotations (rx, ry and rz) (default: 0.0)
+arg6 : []
+    list of bit registers (default: [])
+arg7 : str
+    condition (default: 'COND_ALWAYS')
+arg8 : []
+    list of condition registers (default: [])
+"""
 %feature("docstring") Kernel::gate
 """ adds custom/default gates to kernel.
 

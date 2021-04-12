@@ -48,7 +48,8 @@ typedef enum __gate_type_t
     __dummy_gate__,
     __swap_gate__,
     __wait_gate__,
-    __classical_gate__
+    __classical_gate__,
+    __parameterized_gate__
 } gate_type_t;
 
 const utils::Complex identity_c[] = {
@@ -493,6 +494,15 @@ public:
     instruction_t qasm() const override;
     gate_type_t type() const override;
     cmat_t mat() const override;
+};
+
+class parameterized_gate : public custom_gate {
+public:
+    explicit parameterized_gate(const utils::Str &name);
+    parameterized_gate(const custom_gate &g);
+    instruction_t qasm() const override;
+    // gate_type_t type() const override;
+    // cmat_t mat() const override;
 };
 
 class composite_gate : public custom_gate {

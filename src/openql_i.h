@@ -72,6 +72,7 @@ enum class parameter_type_t {
 class Param {
 public:
     ql::cparam *param;
+    ql::cparam* get_param() const;
 
     // ql::ParamTemp paramtemp;
     Param(const std::string &typeStr);
@@ -185,7 +186,26 @@ public:
         const std::vector<size_t> &ancilla_qubits
     );
     void conjugate(const Kernel &k);
-    void hadamard(Param q0);
+    void hadamard(const Param &p0);
+    void gate(
+        const std::string &name,
+        const Param &p0,
+        size_t duration = 0,
+        double angle = 0.0,
+        const std::vector<size_t> &bregs = {},
+        const std::string &condstring = "COND_ALWAYS",
+        const std::vector<size_t> &condregs = {}
+    );
+    void gate(
+        const std::string &name,
+        const Param &p0,
+        const Param &p1,
+        size_t duration = 0,
+        double angle = 0.0,
+        const std::vector<size_t> &bregs = {},
+        const std::string &condstring = "COND_ALWAYS",
+        const std::vector<size_t> &condregs = {}
+    );
     ~Kernel();
 };
 
