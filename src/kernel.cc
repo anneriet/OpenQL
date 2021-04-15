@@ -102,17 +102,7 @@ void quantum_kernel::i(UInt qubit) {
 void quantum_kernel::hadamard(UInt qubit) {
     gate("hadamard", qubit);
 }
-void quantum_kernel::hadamard(const ql::cparam *qubit_p) {
-    // QL_EOUT("Help no value for qubit parameter: "<< qubit_p->int_value);
-    if(qubit_p->assigned)
-    {
-        gate("hadamard", qubit_p->int_value);
-    }
-    else
-    {
-        QL_EOUT("Help no value for qubit parameter: "<< qubit_p->name);
-    }
-}   
+
 void quantum_kernel::h(UInt qubit) {
     hadamard(qubit);
 }
@@ -788,13 +778,6 @@ void quantum_kernel::gate(const Str &gname, UInt q0) {
     gate(gname, Vec<UInt> {q0});
 }
 
-void quantum_kernel::gate(const Str &gname, PInt q0) {
-    if(q0.value > 0)
-    {
-        gate(gname, Vec<UInt> {q0.value});
-    }
-}
-
 void quantum_kernel::gate(const Str &gname, UInt q0, UInt q1) {
     gate(gname, Vec<UInt> {q0, q1});
 }
@@ -1199,31 +1182,56 @@ void quantum_kernel::gate(const utils::Str &gname, const ql::cparam * q0, const 
         cond_type_t gcond,
         const utils::Vec<utils::UInt> &gcondregs)
 {
-    if(q0->assigned)
-    {
-        Vec<UInt> lqubits = {q0->int_value};
-
-        auto lcregs = cregs;
-        auto lbregs = bregs;
-        if(q1->assigned) // Two qubit gate
+    QL_DOUT("gate:" <<" gname=" << gname <<" param1=" << q0->name <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+    if(q1 != nullptr) // two qubit gate
+        { 
+        QL_DOUT("2 qubit gate:" <<" gname=" << gname <<" param1=" << q0->name << " value=" << q0->int_value << " param2=" << q1->name << " value=" << q1->int_value); 
+        if(q0->assigned && q1->assigned) // gate as usual
         {
-                lqubits.push_back(q1->int_value);
-        }
-    QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+            Vec<UInt> lqubits = {q0->int_value, q1->int_value};
 
-        gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
-    }
-    else
-    {
-        StrStrm qasmline;
-        qasmline << gname << " %" << q0->name;
-        if(q1 != nullptr)
-        {
-            qasmline << " %" << q1->name;
+            auto lcregs = cregs;
+            auto lbregs = bregs;
+            QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+            gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
         }
-        
-        QL_DOUT("Parameterized gate: " << qasmline.str());
-        c.push_back(new ql::parameterized_gate(qasmline.str()));
+        else
+        {
+            StrStrm qasmline;
+            if(q0->assigned){
+                qasmline << gname << " " << q0->int_value;
+            } else{
+                qasmline << gname << " %" << q0->name;
+            }
+            if(q1->assigned){
+                qasmline << " " << q1->int_value;
+            } else{
+                qasmline << " %" << q1->name;
+            }
+                     
+            QL_DOUT("Parameterized gate: " << qasmline.str());
+            c.push_back(new ql::parameterized_gate(qasmline.str()));
+        }
+        }
+    else // one qubit gate
+    {
+        if(q0->assigned)
+        {
+            Vec<UInt> lqubits = {q0->int_value};
+
+            auto lcregs = cregs;
+            auto lbregs = bregs;
+            QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+            gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
+        }
+        else
+        {
+            StrStrm qasmline;
+            qasmline << gname << " %" << q0->name; 
+                     
+            QL_DOUT("Parameterized gate: " << qasmline.str());
+            c.push_back(new ql::parameterized_gate(qasmline.str()));
+        }
     }
 };
 

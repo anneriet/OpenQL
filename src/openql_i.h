@@ -93,7 +93,7 @@ public:
     // parameter_type_t type();
     void qasm();
 
-    void set_value(int val); // TODO: Change this to an actual function that returns something!
+    void set_value(int val); 
     // operator int() const {return  value;}
     // operator size_t() const {return 2;}
    // operator std::vector<size_t>() {return int_value;}
@@ -186,7 +186,6 @@ public:
         const std::vector<size_t> &ancilla_qubits
     );
     void conjugate(const Kernel &k);
-    void hadamard(const Param &p0);
     void gate(
         const std::string &name,
         const Param &p0,

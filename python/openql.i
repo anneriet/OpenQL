@@ -311,15 +311,6 @@ arg1 : int
     target qubit
 """
 
-%feature("docstring") Kernel::hadamard
-""" Applies hadamard on the qubit specified in argument.
-
-Parameters
-----------
-arg1 : Param
-    target qubit parameter
-"""
-
 %feature("docstring") Kernel::s
 """ Applies s on the qubit specified in argument.
 

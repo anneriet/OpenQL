@@ -147,10 +147,6 @@ void Kernel::hadamard(size_t q0) {
     kernel->hadamard(q0);
 }
 
-void Kernel::hadamard(const Param &p0) {
-    kernel->hadamard(p0.get_param());
-}
-
 void Kernel::s(size_t q0) {
     kernel->s(q0);
 }
@@ -694,8 +690,8 @@ void Param::set_value(int val)
     };
 
 ql::cparam* Param::get_param() const{
-    if(name != "") param->name = name;
-    if(param->assigned) param->int_value = int_value;
+    // if(name != "") param->name = name;
+    // if(param->assigned) param->int_value = int_value;
     return param;
 }
 

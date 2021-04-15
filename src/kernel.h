@@ -64,7 +64,6 @@ public:
 
     void identity(utils::UInt qubit);
     void i(utils::UInt qubit);
-    void hadamard(const ql::cparam *qubit);
     void hadamard(utils::UInt qubit);
     void h(utils::UInt qubit);
     void rx(utils::UInt qubit, utils::Real angle);
@@ -94,9 +93,6 @@ public:
     void wait(const utils::Vec<utils::UInt> &qubits, utils::UInt duration);
     void display();
     void clifford(utils::Int id, utils::UInt qubit=0);
-
-    
-    void gate(const utils::Str &gname, PInt q0);
 private:
     // a default gate is the last resort of user gate resolution and is of a build-in form, as below in the code;
     // the "using_default_gates" option can be used to enable ("yes") or disable ("no") default gates;
@@ -197,7 +193,7 @@ public:
 
     // Parameters
     void gate(const utils::Str &gname, const ql::cparam * q0, 
-        const ql::cparam * q1 = {}, 
+        const ql::cparam * q1 = nullptr, 
         const utils::Vec<utils::UInt> &cregs = {},
         utils::UInt duration = 0,
         utils::Real angle = 0.0,
