@@ -52,7 +52,6 @@ public:
     void set_platform(const quantum_platform &platform);
 
     void compile();
-    void compile_modular();
 
     void print_interaction_matrix() const;
     void write_interaction_matrix() const;

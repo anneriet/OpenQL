@@ -646,7 +646,11 @@ Options make_ql_options() {
     options.add_enum("decompose_toffoli", "Type of decomposition used for toffoli", "no", {"no", "NC", "AM"});
     options.add_enum("quantumsim", "Produce quantumsim output, and of which kind", "no", {"no", "yes", "qsoverlay"});
     options.add_bool("issue_skip_319", "Issue skip instead of wait in bundles");
+
     options.add_str ("backend_cc_map_input_file", "Name of CC input map file");
+    options.add_bool("backend_cc_verbose", "Add verbose comments to generated .vq1asm file", true);
+    options.add_bool("backend_cc_run_once", "Create a .vq1asm program that runs once instead of repeating indefinitely");
+
     options.add_enum("cz_mode", "CZ mode", "manual", {"manual", "auto"});
     options.add_enum("mapper", "Mapper heuristic", "no", {"no", "base", "baserc", "minextend", "minextendrc", "maxfidelity"});
     options.add_bool("mapinitone2one", "Initialize mapping of virtual qubits one to one to real qubits", true);
@@ -665,6 +669,7 @@ Options make_ql_options() {
     options.add_bool("mapreverseswap", "Reverse swap operands when better", true);
     options.add_bool("write_qasm_files", "write (un-)scheduled (with and without resource-constraint) qasm files");
     options.add_bool("write_report_files", "write report files on circuit characteristics and pass results");
+    options.add_bool("generate_code", "Generate code for the target; otherwise stop just before doing that", true);
 
     return options;
 }
