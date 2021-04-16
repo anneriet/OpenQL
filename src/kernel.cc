@@ -1236,6 +1236,7 @@ void quantum_kernel::gate(const utils::Str &gname, const ql::cparam * q0, const 
 };
 
 
+
 /**
  * qasm output
  */

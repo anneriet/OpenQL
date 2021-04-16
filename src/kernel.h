@@ -201,6 +201,8 @@ public:
         cond_type_t gcond = cond_always,
         const utils::Vec<utils::UInt> &gcondregs = {}
     );
+
+
     // terminology:
     // - composite/custom/default (in decreasing order of priority during lookup in the gate definition):
     //      - composite gate: a gate definition with subinstructions; when matched, decompose and add the subinstructions
