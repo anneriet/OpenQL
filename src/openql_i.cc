@@ -628,8 +628,12 @@ Compiler::Compiler(
 {
     compiler = new ql::quantum_compiler(name, config_file);
 }
-
 void Compiler::compile(Program &program) {
+    QL_DOUT(" Compiler " << name << " compiles program  " << program.name);
+    compiler->compile(program.program);
+}
+
+void Compiler::compile(Program &program, const std::list<Param>  &paramlst) {
     QL_DOUT(" Compiler " << name << " compiles program  " << program.name);
     compiler->compile(program.program);
 }
@@ -654,6 +658,8 @@ void Compiler::set_pass_option(
 }
 
 // C+++ Interfaces?
+Param::Param() : typeStr(""){};
+
 Param::Param(const std::string &typeStr) : typeStr(typeStr){
         QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         // if(typeStr.compare("INT") ){

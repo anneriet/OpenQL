@@ -99,6 +99,41 @@ void PassManager::compile(quantum_program *program) const {
 }
 
 /**
+ * @brief   Applies the sequence of compiler passes to the given program
+ * @param   quantum_program   Object reference to the program to be compiled
+ * @param   paramlst    List of parameters for the program
+ */
+void PassManager::compile(quantum_program *program, const std::vector<std::vector<size_t>> paramlst) const {
+    QL_FATAL("TODO: Add passmanager with params implementation");
+    QL_DOUT("In PassManager::compile ... ");
+    for (auto pass : passes) {
+        ///@todo-rn: implement option to check if following options are actually needed for a pass
+        ///@note-rn: currently(0.8.1.dev), all passes require platform as API parameter, and some passes depend on the nqubits internally. Therefore, these are passed through by setting the program with these fields here. However, this should change in the future since compiling for a simulator might not require a platform, and the number of qubits could be optional.
+
+        if (!program->qubit_count) {
+            program->qubit_count = pass->getPassOptions()["nqubits"].as_uint();
+        }
+        assert(program->qubit_count);
+
+        //If the old interface is used, platform is already set, so it is not needed to look for platform option and configure the platform from there
+        if (!program->platformInitialized) {
+            Str hwconfig = pass->getPassOptions()["hwconfig"].as_str();
+            program->platform = *(new quantum_platform("testPlatform",hwconfig));
+        }
+
+        if (!pass->getSkip()) {
+            QL_DOUT(" Calling pass: " << pass->getPassName());
+            pass->initPass(program);
+            pass->runOnProgram(program);
+            pass->finalizePass(program);
+        }
+    }
+
+    // generate sweep_points file ==> TOOD: delete?
+    write_sweep_points(program, program->platform, "write_sweep_points");
+}
+
+/**
  * @brief   Adds a compiler pass to the pass manager
  * @param   pass Object reference to the pass to be added
  */

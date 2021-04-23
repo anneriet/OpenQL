@@ -65,16 +65,12 @@ public:
     static bool is_decompose_support_enabled();
 };
 
-enum class parameter_type_t {
-    PBOOL, PINT, PREAL, PCOMPLEX
-};
-
 class Param {
 public:
     ql::cparam *param;
-    ql::cparam* get_param() const;
+    ql::cparam *get_param() const;
 
-    // ql::ParamTemp paramtemp;
+    Param();
     Param(const std::string &typeStr);
     Param(const std::string &typeStr, const std::string &name);
     Param(const std::string &typeStr, const std::string &name, int value);
@@ -266,6 +262,7 @@ public:
     ~cQasmReader();
 };
 
+typedef std::vector<Param> vectorparam;
 
 /**
  * quantum compiler interface
@@ -279,6 +276,7 @@ public:
     Compiler(const std::string &name);
     Compiler(const std::string &name, const std::string &config_file);
     void compile(Program &program);
+    void compile(Program &program, const std::list<Param> &paramlst);
     void add_pass_alias(const std::string &realPassName, const std::string &symbolicPassName);
     void add_pass(const std::string &realPassName);
     void set_pass_option(

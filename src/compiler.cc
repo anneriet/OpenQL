@@ -39,6 +39,18 @@ void quantum_compiler::compile(quantum_program *program) {
 }
 
 /**
+ * @brief   Compiles the program passed as parameter, sets the values for the passed parameters
+ * @param   quantum_program   Object reference to the program to be compiled
+ * @param   paramlst    List of parameters for the program
+ */
+void quantum_compiler::compile(quantum_program* program, const std::vector<std::vector<size_t>> paramlst)
+{
+    QL_DOUT("Compiler compiles program with parameters");
+    passManager->compile(program, paramlst);
+};
+
+
+/**
  * @brief   Adds a compiler pass with its actual name to the pass manager
  * @param   realPassName String of the actual pass name
  * @param   symbolicPassName String of the alias pass name

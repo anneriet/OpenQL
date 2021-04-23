@@ -10,6 +10,7 @@
 %module(docstring=DOCSTRING) openql
 
 %include "std_vector.i"
+%include "std_list.i"
 %include "exception.i"
 %include "std_string.i"
 %include "std_complex.i"
@@ -27,6 +28,8 @@ namespace std {
 #include "openql_i.h"
 %}
 
+%template(ParamList) std::list<Param>;
+
 /*
 %pythoncode %{
 import os, errno
@@ -40,7 +43,6 @@ def set_output_dir(path):
     _openql.set_output_dir_(path)
 %}
 */
-
 
 %exception {
     try {
@@ -934,6 +936,17 @@ Parameters
 ----------
 arg1 : Program
     program object to be compiled.
+"""
+
+%feature("docstring") Compiler::compile
+""" Compiles the program
+
+Parameters
+----------
+arg1 : Program
+    program object to be compiled.
+arg2 : []
+    List of parameters for the program
 """
 
 %feature("docstring") Compiler::add_pass_alias
