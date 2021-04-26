@@ -20,7 +20,7 @@ public:
     quantum_compiler(const utils::Str &name, const utils::Str &configuration_file_name);
 
     void compile(quantum_program*);
-    void compile(quantum_program*, const std::vector<std::vector<size_t>> paramlst);
+    void compile(quantum_program* program, std::vector<cparam> paramlst, std::vector<std::complex<double>> valuelst);
     void addPass(const utils::Str &realPassName, const utils::Str &symbolicPassName);
     void addPass(const utils::Str &realPassName);
     void setPassOption(const utils::Str &passName, const utils::Str &optionName, const utils::Str &optionValue);

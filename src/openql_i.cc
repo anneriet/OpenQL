@@ -633,9 +633,13 @@ void Compiler::compile(Program &program) {
     compiler->compile(program.program);
 }
 
-void Compiler::compile(Program &program, const std::list<Param>  &paramlst) {
+void Compiler::compile(Program &program, const std::list<Param> &paramlst, const std::vector<std::complex<double>> &valuelst) {
     QL_DOUT(" Compiler " << name << " compiles program  " << program.name);
-    compiler->compile(program.program);
+    std::vector<ql::cparam> cparams;
+    for (Param const& parameter : paramlst) {
+        cparams.push_back(*parameter.get_param());
+}
+    compiler->compile(program.program, cparams, {valuelst.begin(), valuelst.end()});
 }
 
 void Compiler::add_pass_alias(const std::string &realPassName, const std::string &symbolicPassName) {
@@ -662,9 +666,6 @@ Param::Param() : typeStr(""){};
 
 Param::Param(const std::string &typeStr) : typeStr(typeStr){
         QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
-        // if(typeStr.compare("INT") ){
-        //     paramtemp = new ql::PInt();
-        // }
         param = new ql::cparam(typeStr);
     }
 

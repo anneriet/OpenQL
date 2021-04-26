@@ -103,7 +103,7 @@ void PassManager::compile(quantum_program *program) const {
  * @param   quantum_program   Object reference to the program to be compiled
  * @param   paramlst    List of parameters for the program
  */
-void PassManager::compile(quantum_program *program, const std::vector<std::vector<size_t>> paramlst) const {
+void PassManager::compile(quantum_program *program, std::vector<cparam> paramlst) const {
     QL_FATAL("TODO: Add passmanager with params implementation");
     QL_DOUT("In PassManager::compile ... ");
     for (auto pass : passes) {

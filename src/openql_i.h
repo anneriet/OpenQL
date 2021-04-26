@@ -276,7 +276,7 @@ public:
     Compiler(const std::string &name);
     Compiler(const std::string &name, const std::string &config_file);
     void compile(Program &program);
-    void compile(Program &program, const std::list<Param> &paramlst);
+    void compile(Program &program, const std::list<Param> &paramlst, const std::vector<std::complex<double>> &valuelst);
     void add_pass_alias(const std::string &realPassName, const std::string &symbolicPassName);
     void add_pass(const std::string &realPassName);
     void set_pass_option(

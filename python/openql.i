@@ -947,6 +947,8 @@ arg1 : Program
     program object to be compiled.
 arg2 : []
     List of parameters for the program
+arg3 : []
+    List of values for the parameters (complex double)
 """
 
 %feature("docstring") Compiler::add_pass_alias

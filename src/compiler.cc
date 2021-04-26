@@ -43,9 +43,14 @@ void quantum_compiler::compile(quantum_program *program) {
  * @param   quantum_program   Object reference to the program to be compiled
  * @param   paramlst    List of parameters for the program
  */
-void quantum_compiler::compile(quantum_program* program, const std::vector<std::vector<size_t>> paramlst)
+void quantum_compiler::compile(quantum_program* program, std::vector<cparam> paramlst, std::vector<std::complex<double>> valuelst)
 {
     QL_DOUT("Compiler compiles program with parameters");
+    for (auto it = end (paramlst); it != begin (paramlst); --it) {
+        it->int_value = int(valuelst.back().real());
+        valuelst.pop_back();
+    }
+
     passManager->compile(program, paramlst);
 };
 
