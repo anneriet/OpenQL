@@ -9,6 +9,7 @@
 #include "utils/json.h"
 #include "utils/misc.h"
 #include "matrix.h"
+#include "param.h"
 
 namespace ql {
 
@@ -518,8 +519,12 @@ class parameterized_gate : public custom_gate {
 public:
     explicit parameterized_gate(const utils::Str &name);
     parameterized_gate(const custom_gate &g);
+    ql::cparam* q0;
+    ql::cparam* q1;
+    parameterized_gate(const utils::Str &name, ql::cparam* q0);
+    parameterized_gate(const utils::Str &name, ql::cparam* q0, ql::cparam* q1);
     instruction_t qasm() const override;
-    // gate_type_t type() const override;
+    gate_type_t type() const override;
     // cmat_t mat() const override;
 };
 

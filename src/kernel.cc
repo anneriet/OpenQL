@@ -1174,7 +1174,7 @@ void quantum_kernel::multicontrolled_ry(
 //         c.push_back(new ql::parameterized_gate(qasmline));
 //     }
 // };
-void quantum_kernel::gate(const utils::Str &gname, const ql::cparam * q0, const ql::cparam * q1,
+void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam * q1,
         const utils::Vec<utils::UInt> &cregs,
         utils::UInt duration,
         utils::Real angle,
@@ -1208,9 +1208,10 @@ void quantum_kernel::gate(const utils::Str &gname, const ql::cparam * q0, const 
             } else{
                 qasmline << " %" << q1->name;
             }
-                     
+            cparam lparam0 = *q0;
+            cparam lparam1 = *q1;
             QL_DOUT("Parameterized gate: " << qasmline.str());
-            c.push_back(new ql::parameterized_gate(qasmline.str()));
+            c.push_back(new ql::parameterized_gate(gname, q0, q1));
         }
         }
     else // one qubit gate
@@ -1230,7 +1231,7 @@ void quantum_kernel::gate(const utils::Str &gname, const ql::cparam * q0, const 
             qasmline << gname << " %" << q0->name; 
                      
             QL_DOUT("Parameterized gate: " << qasmline.str());
-            c.push_back(new ql::parameterized_gate(qasmline.str()));
+            c.push_back(new ql::parameterized_gate(gname, q0));
         }
     }
 };

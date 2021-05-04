@@ -768,7 +768,7 @@ instruction_t custom_gate::qasm() const {
             ss << ", b[" << breg_operands[i] << "]";
         }
     }
-
+    QL_DOUT("custom_gate.qasm(): " <<ss.str());
     return instruction_t(ss.str());
 }
 
@@ -783,17 +783,53 @@ cmat_t custom_gate::mat() const {
 
 parameterized_gate::parameterized_gate(const utils::Str &name)  : custom_gate(name)
 {
+    QL_DOUT("Parameterized gate initialized as: " << name);
+    duration = 0;
+}  
+
+parameterized_gate::parameterized_gate(const utils::Str &name, cparam *q0)  : custom_gate(name), q0(q0), q1(nullptr)
+{
+    QL_DOUT("Parameterized gate initialized with q0: " << q0->name);
+    duration = 0;
+}
+
+parameterized_gate::parameterized_gate(const utils::Str &name, cparam *q0, cparam *q1)  : custom_gate(name), q0(q0), q1(q1)
+{
+    QL_DOUT("Parameterized gate initialized with q0: " << q0->name << " and q1: " << q1->name);
     duration = 0;
 }
 instruction_t parameterized_gate::qasm() const
 {
-    return instruction_t(name);
+    if(q0 != nullptr){
+        if(q0->assigned)
+        {
+            QL_DOUT("Parameterized gate with q0 assigned");
+            custom_gate* tmp = new custom_gate(name);
+            tmp->operands = {q0->int_value};
+            if(q1 == nullptr) return tmp->qasm(); // one qubit gate
+            if(q1-> assigned)
+            {
+                QL_DOUT("Parameterized gate with q0 and q1 assigned: values are " << q0->int_value << " and " << q1->int_value);
+                tmp->operands.push_back(q1->int_value); // both values assigned
+                return tmp->qasm();
+            }
+        }
+        // keep parameters otherwise
+        StrStrm qasmline;
+        qasmline << name << " %" << q0->name;     
+        if(q1 != nullptr) qasmline << " %" << q1->name; // two qubit gate
+        QL_DOUT("Parameterized gate: " << qasmline.str());
+        return qasmline.str();     
+    }
+    else
+    {
+        QL_EOUT("Paramterized gate without parameters, q0 is nullptr!");
+    }                   
 }
 
-// gate_type_t parameterized_gate::type() const{
-//     return __parameterized_gate__;
-// }
-    // cmat_t mat() const override;
+gate_type_t parameterized_gate::type() const{
+    return __parameterized_gate__;
+}
 
 composite_gate::composite_gate(const Str &name) : custom_gate(name) {
     duration = 0;

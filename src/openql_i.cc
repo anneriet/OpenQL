@@ -635,9 +635,9 @@ void Compiler::compile(Program &program) {
 
 void Compiler::compile(Program &program, const std::list<Param> &paramlst, const std::vector<std::complex<double>> &valuelst) {
     QL_DOUT(" Compiler " << name << " compiles program  " << program.name);
-    std::vector<ql::cparam> cparams;
+    std::vector<ql::cparam*> cparams;
     for (Param const& parameter : paramlst) {
-        cparams.push_back(*parameter.get_param());
+        cparams.push_back(parameter.get_param());
 }
     compiler->compile(program.program, cparams, {valuelst.begin(), valuelst.end()});
 }

@@ -43,14 +43,17 @@ void quantum_compiler::compile(quantum_program *program) {
  * @param   quantum_program   Object reference to the program to be compiled
  * @param   paramlst    List of parameters for the program
  */
-void quantum_compiler::compile(quantum_program* program, std::vector<cparam> paramlst, std::vector<std::complex<double>> valuelst)
+void quantum_compiler::compile(quantum_program* program, std::vector<cparam*> paramlst, std::vector<std::complex<double>> valuelst)
 {
-    QL_DOUT("Compiler compiles program with parameters");
-    for (auto it = end (paramlst); it != begin (paramlst); --it) {
-        it->int_value = int(valuelst.back().real());
-        valuelst.pop_back();
+    QL_DOUT("Compiler compiles program with parameters (ONLY INT)");
+    int i = 0;
+    for (auto it = begin (valuelst); it != end (valuelst); ++it) {
+        paramlst[i]->int_value = int(it->real());
+        paramlst[i]->assigned = true;
+        QL_DOUT("Parameter " << paramlst[i]->name << " has value " << paramlst[i]->int_value);
+        i++;
     }
-
+    if(paramlst[i-1]->name != paramlst.back()->name){QL_EOUT("List of parameters and list of values are not the same length.");}
     passManager->compile(program, paramlst);
 };
 

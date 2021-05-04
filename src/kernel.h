@@ -192,8 +192,8 @@ public:
     void gate(const unitary &u, const utils::Vec<utils::UInt> &qubits);
 
     // Parameters
-    void gate(const utils::Str &gname, const ql::cparam * q0, 
-        const ql::cparam * q1 = nullptr, 
+    void gate(const utils::Str &gname, ql::cparam * q0, 
+        ql::cparam * q1 = nullptr, 
         const utils::Vec<utils::UInt> &cregs = {},
         utils::UInt duration = 0,
         utils::Real angle = 0.0,

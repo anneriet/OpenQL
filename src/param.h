@@ -20,6 +20,7 @@ enum class parameter_type_t {
  */
 class cparam {
 public:
+    cparam();
     cparam(const utils::Str typeStr);
     cparam(const utils::Str typeStr, const utils::Str name);
     // cparam(utils::Str typeStr, utils::Str name, utils::UInt value);

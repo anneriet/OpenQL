@@ -14,6 +14,9 @@ namespace ql {
  * @param   typeStr    typeStr of the parameter
  */
 
+cparam::cparam()
+{}
+
 cparam::cparam(const utils::Str typeStr) : typeStr(typeStr){
     name = paramnamerand();
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name);
