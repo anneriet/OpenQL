@@ -1147,33 +1147,6 @@ void quantum_kernel::multicontrolled_ry(
 }
 
 // Parameters
-// void quantum_kernel::gate(const utils::Str &gname, const ql::cparam * q0, 
-//         const utils::Vec<utils::UInt> &cregs,
-//         utils::UInt duration,
-//         utils::Real angle,
-//         const utils::Vec<utils::UInt> &bregs,
-//         cond_type_t gcond,
-//         const utils::Vec<utils::UInt> &gcondregs
-//     )
-// {
-
-//     if(q0->assigned)
-//     {
-//         Vec<UInt> lqubits = {q0->int_value};
-//     QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
-
-//         auto lcregs = cregs;
-//         auto lbregs = bregs;
-//         gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
-//     }
-//     else
-//     {
-        
-//         const utils::Str qasmline = gname + " %" + q0->name;
-//         QL_DOUT("Parameterized gate: " << qasmline);
-//         c.push_back(new ql::parameterized_gate(qasmline));
-//     }
-// };
 void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam * q1,
         const utils::Vec<utils::UInt> &cregs,
         utils::UInt duration,
@@ -1181,61 +1154,82 @@ void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam *
         const utils::Vec<utils::UInt> &bregs,
         cond_type_t gcond,
         const utils::Vec<utils::UInt> &gcondregs)
-{
-    QL_DOUT("gate:" <<" gname=" << gname <<" param1=" << q0->name <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
-    if(q1 != nullptr) // two qubit gate
-        { 
-        QL_DOUT("2 qubit gate:" <<" gname=" << gname <<" param1=" << q0->name << " value=" << q0->int_value << " param2=" << q1->name << " value=" << q1->int_value); 
-        if(q0->assigned && q1->assigned) // gate as usual
-        {
-            Vec<UInt> lqubits = {q0->int_value, q1->int_value};
-
-            auto lcregs = cregs;
-            auto lbregs = bregs;
-            QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
-            gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
-        }
-        else
-        {
-            StrStrm qasmline;
-            if(q0->assigned){
-                qasmline << gname << " " << q0->int_value;
-            } else{
-                qasmline << gname << " %" << q0->name;
-            }
-            if(q1->assigned){
-                qasmline << " " << q1->int_value;
-            } else{
-                qasmline << " %" << q1->name;
-            }
-            cparam lparam0 = *q0;
-            cparam lparam1 = *q1;
-            QL_DOUT("Parameterized gate: " << qasmline.str());
-            c.push_back(new ql::parameterized_gate(gname, q0, q1));
-        }
-        }
-    else // one qubit gate
     {
-        if(q0->assigned)
+    // QL_DOUT("Parameterized 2 qubit gate:" <<" gname=" << gname <<" param1=" << q0->name << " type=" << q0->typeStr << " param2=" << q1->name << " type=" << q1->typeStr); 
+    if(q0->type() != ql::parameter_type_t::PINT)
+    {
+        QL_FATAL("Wrong/unknown type for parameter 0 for gate " << gname << "! Type is " << q0->typeStr);
+    }
+    if(q0->assigned) 
+    {
+        Vec<UInt> lqubits = {q0->int_value};
+        auto lcregs = cregs;
+        auto lbregs = bregs;
+        if(q1 != nullptr && q1->assigned) // two qubit gate or one qubit gate with angle parameter
         {
-            Vec<UInt> lqubits = {q0->int_value};
-
-            auto lcregs = cregs;
-            auto lbregs = bregs;
+            switch(q1->type()) 
+            {
+            case ql::parameter_type_t::PINT: // two qubit gate as usual
+                lqubits.push_back(q1->int_value);
+                QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+                gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
+                break;
+            case ql::parameter_type_t::PREAL:
+                QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << q1->real_value <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+                gate(gname, lqubits, lcregs, duration, q1->real_value, lbregs, gcond, gcondregs);
+                break;
+            default:
+                QL_FATAL("Wrong/unknown type for parameter 1 for gate " << gname << "! Type is " << q1->typeStr);
+            }
+        }
+        else if (q1 == nullptr) // Regular one qubit gate, q0 is assigned and q1 is a nullptr
+        {
             QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
             gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
-        }
-        else
-        {
-            StrStrm qasmline;
-            qasmline << gname << " %" << q0->name; 
-                     
-            QL_DOUT("Parameterized gate: " << qasmline.str());
-            c.push_back(new ql::parameterized_gate(gname, q0));
+            return;
         }
     }
+    QL_DOUT("Parameterized 2 qubit gate:" <<" gname=" << gname <<" param1=" << q0->name << " type=" << q0->typeStr << " param2=" << q1->name << " type=" << q1->typeStr); 
+
+    // TODO: This is partially just debug info, remove later
+    StrStrm qasmline;
+    if(q0->assigned){
+        qasmline << gname << " " << q0->int_value;
+    } else{
+        qasmline << gname << " %" << q0->name;
+    }
+
+    if(q1 == nullptr){
+        c.push_back(new ql::parameterized_gate(gname, q0));
+    } else {
+        if(q1->assigned){
+            qasmline << " " << q1->int_value;
+        } else{
+            qasmline << " %" << q1->name;
+        }
+        c.push_back(new ql::parameterized_gate(gname, q0, q1));
+    }
+    QL_DOUT("Parameterized gate: " << qasmline.str());
 };
 
+void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam * q1,
+        const utils::Vec<utils::UInt> &cregs,
+        utils::UInt duration,
+        ql::cparam * angleparam,
+        const utils::Vec<utils::UInt> &bregs,
+        cond_type_t gcond,
+        const utils::Vec<utils::UInt> &gcondregs)
+{
+QL_EOUT("Angle parameters not implmented yet");
+}
+
+void quantum_kernel::gate(
+    const Str &gname,
+    const Vec<UInt> &qubits,
+    ql::cparam * angleparam
+) {
+QL_EOUT("Angle parameters not implemented yet");
+}
 
 
 /**

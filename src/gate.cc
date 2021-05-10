@@ -800,31 +800,26 @@ parameterized_gate::parameterized_gate(const utils::Str &name, cparam *q0, cpara
 }
 instruction_t parameterized_gate::qasm() const
 {
-    if(q0 != nullptr){
-        if(q0->assigned)
-        {
-            QL_DOUT("Parameterized gate with q0 assigned");
-            custom_gate* tmp = new custom_gate(name);
-            tmp->operands = {q0->int_value};
-            if(q1 == nullptr) return tmp->qasm(); // one qubit gate
-            if(q1-> assigned)
-            {
-                QL_DOUT("Parameterized gate with q0 and q1 assigned: values are " << q0->int_value << " and " << q1->int_value);
-                tmp->operands.push_back(q1->int_value); // both values assigned
-                return tmp->qasm();
-            }
-        }
-        // keep parameters otherwise
-        StrStrm qasmline;
-        qasmline << name << " %" << q0->name;     
-        if(q1 != nullptr) qasmline << " %" << q1->name; // two qubit gate
-        QL_DOUT("Parameterized gate: " << qasmline.str());
-        return qasmline.str();     
-    }
-    else
+    if(q0 == nullptr) QL_FATAL("Parameterized gate without parameters, q0 is nullptr!");
+    if(q0->assigned)
     {
-        QL_EOUT("Paramterized gate without parameters, q0 is nullptr!");
-    }                   
+        QL_DOUT("Parameterized gate with q0 assigned");
+        custom_gate* tmp = new custom_gate(name);
+        tmp->operands = {q0->int_value};
+        if(q1 == nullptr) return tmp->qasm(); // one qubit gate
+        if(q1->assigned)
+        {
+            QL_DOUT("Parameterized gate with q0 and q1 assigned: values are " << q0->int_value << " and " << q1->int_value);
+            tmp->operands.push_back(q1->int_value); // both values assigned
+            return tmp->qasm();
+        }
+    }
+    // keep parameters otherwise
+    StrStrm qasmline;
+    qasmline << name << " %" << q0->name;     
+    if(q1 != nullptr) qasmline << " %" << q1->name; // two qubit gate
+    QL_DOUT("parameterized_gate.qasm(): " << qasmline.str());
+    return qasmline.str();     
 }
 
 gate_type_t parameterized_gate::type() const{

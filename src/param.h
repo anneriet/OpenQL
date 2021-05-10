@@ -12,8 +12,9 @@
 namespace ql {
 
 enum class parameter_type_t {
-    PBOOL, PINT, PREAL, PCOMPLEX
+    PERROR, PINT, PREAL, PCOMPLEX, PBOOL
 };
+
 
 /**
  * cparam_
@@ -44,30 +45,7 @@ public:
 private:
     const utils::Real rand(const utils::Real val_max, utils::UInt * p_rng);
     const char* paramnamerand(); 
+    parameter_type_t type_;
+    parameter_type_t set_type(const utils::Str typeStr);
 };
-
-// class ParamTemp{
-//     protected:
-//         utils::Str paramnamerand();
-//     public:
-//     utils::Str name;
-//     ParamTemp(){ };
-//     // ParamTemp(const Type& initValue) :  value(initValue){ };
-//     // Type Param(const utils::Str name, const Type& initValue);
-//     // virtual utils::Str toString() const;
-// };
-
-// class PInt : public ParamTemp{
-//     private:
-// //         // utils::Str paramnamerand();
-// //         // utils::Str name;
-//     public:
-//         PInt();
-//         PInt(const utils::UInt &value);
-
-//         utils::Str toString();
-//         utils::UInt value = -1;
-
-        
-// };
 } // namespace ql

@@ -14,14 +14,16 @@ namespace ql {
  * @param   typeStr    typeStr of the parameter
  */
 
-cparam::cparam()
+cparam::cparam() : typeStr("")
 {}
 
 cparam::cparam(const utils::Str typeStr) : typeStr(typeStr){
     name = paramnamerand();
+    set_type(typeStr);
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name);
 }
 cparam::cparam(const utils::Str typeStr, const utils::Str name)  : typeStr(typeStr) , name(name){
+    set_type(typeStr);
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name);
 }
 // cparam::cparam(utils::Str typeStr, utils::Str name, utils::UInt value){
@@ -29,51 +31,82 @@ cparam::cparam(const utils::Str typeStr, const utils::Str name)  : typeStr(typeS
 //     name = name;
 // }
 cparam::cparam(const utils::Str typeStr, const utils::Str name, const utils::Real value) : typeStr(typeStr) , name(name), assigned(true){
+    set_type(typeStr);
+    if(type_ == parameter_type_t::PINT)
+    {
+        int_value = (int) value;
+    }
+    else if (type_ == parameter_type_t::PREAL)
+    {
+        real_value = value;
+    }
+    else
+    {
+        assigned = false;
+        QL_FATAL("Parameter type string and value mismatch (int or real)");
+    }
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name << " value: " << value);
+}
 
-    if(typeStr == "INT")
-    {
-        int_value = (int) value;
-    }
-    else
-    {
-        real_value = value;
-    }
-}
 cparam::cparam(const utils::Str typeStr, const utils::Str name, const utils::Complex value) : typeStr(typeStr) , name(name), assigned(true){
-       QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name << " value: " << value);
+    if(set_type(typeStr) != parameter_type_t::PCOMPLEX) QL_FATAL("Parameter type string and value mismatch (complex)");
     complex_value = value;
+    QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name << " value: " << value);
 }
-// cparam::cparam(utils::Str typeStr, utils::UInt value) : typeStr(typeStr){
-// }
+
 cparam::cparam(const utils::Str typeStr, const utils::Real value) : typeStr(typeStr), assigned(true){
-    name = paramnamerand();
-    if(typeStr == "INT")
+    set_type(typeStr);
+    if(type_ == parameter_type_t::PINT)
     {
-    QL_DOUT("Param of typeStr: "<< typeStr<< " (Int) name: " << name << " value: " << value);
         int_value = (int) value;
     }
-    else
+    else if (type_ == parameter_type_t::PREAL)
     {
         real_value = value;
     }
+    else
+    {
+        assigned = false;
+        QL_FATAL("Parameter type string and value mismatch (int or real)");
+    }
+    name = paramnamerand();    
+    QL_DOUT("Param of type: "<< typeStr << ", name: " << name << " and with value: " << value);
 }
 cparam::cparam(const utils::Str typeStr, const utils::Complex value) : typeStr(typeStr), assigned(true){
-    name = paramnamerand();
-    QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name << " value: " << value);
+    if(set_type(typeStr) != parameter_type_t::PCOMPLEX) QL_FATAL("Parameter type string and value mismatch (complex)");
     complex_value = value;
+    name = paramnamerand();
+    QL_DOUT("Param of typeStr: "<< typeStr<< " (complex) name: " << name << " value: " << value);
 }
 
-utils::UInt id;
-parameter_type_t type_;
+
 utils::Str cparam::qasm() const
 {
     print();
     return name;
 };
 
-
-parameter_type_t type()
+parameter_type_t cparam::set_type(utils::Str typeStr)
+{
+    if(typeStr == "INT")
+    {
+        type_ = parameter_type_t::PINT;
+    }
+    else if (typeStr == "REAL" || typeStr == "ANGLE")
+    {
+        type_ = parameter_type_t::PREAL;
+    }
+    else if (typeStr == "COMPLEX" || typeStr == "STATE")
+    {
+        type_ = parameter_type_t::PCOMPLEX;
+    }
+    else
+    {
+        QL_FATAL("Type " << typeStr << " is not known, please use 'INT', 'REAL' or 'COMPLEX'");
+    }
+    return type_;
+}
+parameter_type_t cparam::type()
 {
     return type_;
 }
@@ -94,43 +127,5 @@ const char* cparam::paramnamerand() {
       }
       return randomid;
     }
-// template<typename Type>
-// class Param{
-//     protected:
-//         Type value;
-//         utils::Str name;
-//     public:
-//     // Type Param(){}
-//     Type Param(const Type& initValue) : value(initValue){ }
-//     // Type Param(const utils::Str name, const Type& initValue) : value(initValue), name(name){ }
-//     virtual utils::Str toString()const;
-// };
-
-
-
-// PInt::PInt() : ParamTemp(){
-//     name = PInt::paramnamerand();
-//     QL_DOUT("Parameter: |- type     : " << "Int" << "\n\t |- name     : " << name);
-//  }
-
-// PInt::PInt(const utils::UInt &value) : ParamTemp(){ };
-
-// utils::Str PInt::toString()  {
-//     std::stringstream strm;
-//     strm << value;
-//     return strm.str();
-// };
-
-// // Return a random parametername.
-// utils::Str ParamTemp::paramnamerand() {
-//       static char randomid[9];
-//       for (unsigned int k = 0; k<8; ++k) {
-//         const int v = (int)std::rand()%3;
-//         randomid[k] = (char)(v==0?('0' + ((int)std::rand()%10)):
-//                              (v==1?('a' + ((int)std::rand()%26)):
-//                               ('A' + ((int)std::rand()%26))));
-//       }
-//       return randomid;
-//     }
 
 } // namespace ql

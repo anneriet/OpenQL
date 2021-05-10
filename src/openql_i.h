@@ -65,6 +65,7 @@ public:
     static bool is_decompose_support_enabled();
 };
 
+
 class Param {
 public:
     ql::cparam *param;
@@ -90,9 +91,8 @@ public:
     void qasm();
 
     void set_value(int val); 
-    // operator int() const {return  value;}
-    // operator size_t() const {return 2;}
-   // operator std::vector<size_t>() {return int_value;}
+    void set_value(double val); 
+    void set_value(std::complex<double> val); 
     ~Param();
 };
 
@@ -200,6 +200,23 @@ public:
         const std::vector<size_t> &bregs = {},
         const std::string &condstring = "COND_ALWAYS",
         const std::vector<size_t> &condregs = {}
+    );
+
+    void gate(
+    const std::string &name,
+    const Param &p0,
+    const Param &p1,
+    size_t duration,
+    const Param &angleparam,
+    const std::vector<size_t> &bregs,
+    const std::string &condstring,
+    const std::vector<size_t> &condregs
+    );
+
+    void gate(
+        const std::string &name,
+        const std::vector<size_t> &qubits,
+        const Param &angleparam
     );
     ~Kernel();
 };

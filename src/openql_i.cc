@@ -440,6 +440,8 @@ void Kernel::gate(
         << ", "
         << p0.name
         << ", "
+        << p1.name
+        << ", "
         << duration
         << ", "
         << angle
@@ -465,6 +467,74 @@ void Kernel::gate(
         {condregs.begin(), condregs.end()}
     );
 }
+
+void Kernel::gate(
+    const std::string &name,
+    const Param &p0,
+    const Param &p1,
+    size_t duration,
+    const Param &angleparam,
+    const std::vector<size_t> &bregs,
+    const std::string &condstring,
+    const std::vector<size_t> &condregs
+) {
+    QL_DOUT(
+        "Python k.gate("
+        << name
+        << ", "
+        << p0.name
+        << ", "
+        << p1.name
+        << ", "
+        << duration
+        << ", "
+        << angleparam.name
+        << ", "
+        << ql::utils::Vec<size_t>(bregs.begin(), bregs.end())
+        << ", "
+        << condstring
+        << ", "
+        << ql::utils::Vec<size_t>(condregs.begin(), condregs.end())
+        << ")"
+    );
+    ql::cond_type_t condvalue = kernel->condstr2condvalue(condstring);
+
+    kernel->gate(
+        name,
+        p0.get_param(),
+        p1.get_param(),
+        {},
+        duration,
+        angleparam.get_param(),
+        {bregs.begin(), bregs.end()},
+        condvalue,
+        {condregs.begin(), condregs.end()}
+    );
+}
+
+void Kernel::gate(
+    const std::string &name,
+    const std::vector<size_t> &qubits,
+    const Param &angleparam
+    )
+    {
+    QL_DOUT(
+        "Python k.gate("
+        << name
+        << ", "
+        << ql::utils::Vec<size_t>(qubits.begin(), qubits.end())
+        << ", "
+        << angleparam.name
+        << ")"
+    );
+
+    kernel->gate(
+        name,
+        {qubits.begin(), qubits.end()},
+        angleparam.get_param()
+    );
+}
+
 
 Kernel::~Kernel() {
     delete(kernel);
@@ -669,59 +739,106 @@ Param::Param(const std::string &typeStr) : typeStr(typeStr){
         param = new ql::cparam(typeStr);
     }
 
-Param::Param(const std::string &typeStr, const std::string &name) : typeStr(typeStr){
+Param::Param(const std::string &typeStr, const std::string &name) : typeStr(typeStr), name(name){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, name);
     }
 
-Param::Param(const std::string &typeStr, const std::string &name, int value) : typeStr(typeStr){
+Param::Param(const std::string &typeStr, const std::string &name, int value) : typeStr(typeStr), name(name){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, name, value);
+        set_value(value);
     }
 
-Param::Param(const std::string &typeStr, const std::string &name, double value){
+Param::Param(const std::string &typeStr, const std::string &name, double value): typeStr(typeStr), name(name){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, name, value);
+        set_value(value);
     }
 
-Param::Param(const std::string &typeStr, const std::string &name, std::complex<double> value){
+Param::Param(const std::string &typeStr, const std::string &name, std::complex<double> value): typeStr(typeStr), name(name){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, name, value);
+        set_value(value);
     }
 
-Param::Param(const std::string &typeStr, int value){
+Param::Param(const std::string &typeStr, int value): typeStr(typeStr){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, value);
+        set_value(value);
     }
     
-Param::Param(const std::string &typeStr, double value){
+Param::Param(const std::string &typeStr, double value): typeStr(typeStr){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, value);
+        set_value(value);
     }
-Param::Param(const std::string &typeStr, std::complex<double> value){
+Param::Param(const std::string &typeStr, std::complex<double> value): typeStr(typeStr){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, value);
+        set_value(value);
     }
 void Param::set_value(int val)
     {
-        QL_DOUT("Param of value: "<< val<< "");
-        param->int_value = val;
+        QL_DOUT("Param of value: "<< val);
+        switch(param->type())
+        {
+            case ql::parameter_type_t::PINT:
+                param->int_value = val;
+                break;
+            case ql::parameter_type_t::PREAL:
+                param->real_value = val;
+                break;
+            case ql::parameter_type_t::PCOMPLEX:
+                param->complex_value = val;
+                break;
+            default:
+                QL_EOUT("Parameter of unknown type " << param->typeStr);
+                return;
+        }
+        param->assigned = true;
+    };
+void Param::set_value(double val)
+    {
+        QL_DOUT("Param of value: "<< val);
+        switch(param->type())
+        {
+            case ql::parameter_type_t::PREAL:
+                param->real_value = val;
+                break;
+            case ql::parameter_type_t::PCOMPLEX:
+                param->complex_value = val;
+                break;
+            default:
+                QL_EOUT("Parameter of unknown type");
+                return;
+        }
+        param->assigned = true;
+    };
+
+void Param::set_value(std::complex<double> val)
+    {
+        QL_DOUT("Param of value: "<< val);
+        switch(param->type())
+        {
+            case ql::parameter_type_t::PCOMPLEX:
+                param->complex_value = val;
+                break;
+            default:
+                QL_EOUT("Parameter of unknown type");
+                return;
+        }
         param->assigned = true;
     };
 
 ql::cparam* Param::get_param() const{
-    // if(name != "") param->name = name;
-    // if(param->assigned) param->int_value = int_value;
     return param;
 }
 
-    // int id;
-    // parameter_type_t type() const;
 void Param::qasm()
     {
         param->qasm();
     };
-    // std::string parameter_name;
 
 Param::~Param(){    // std::cout << "program::~program()" << std::endl;
     // leave deletion to SWIG, otherwise the python unit test framework fails

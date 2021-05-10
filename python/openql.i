@@ -567,6 +567,19 @@ Parameters
 ----------
 arg1 : str
     name of gate
+arg2 : []
+    list of qubits
+arg4 : Param
+    Parameter angle of rotation, used internally only for rotations (rx, ry and rz) 
+"""
+
+%feature("docstring") Kernel::gate
+""" adds custom/default gates to kernel.
+
+Parameters
+----------
+arg1 : str
+    name of gate
 arg2 : Param
     target qubit parameter
 arg3 : Param
@@ -581,6 +594,22 @@ arg7 : str
     condition (default: 'COND_ALWAYS')
 arg8 : []
     list of condition registers (default: [])
+"""
+
+
+%feature("docstring") Kernel::gate
+""" adds custom/default gates to kernel.
+
+Parameters
+----------
+arg1 : str
+    name of gate
+arg2 : Param
+    target qubit parameter
+arg3 : Param
+    target qubit parameter
+arg5 : Param
+    angle of rotation, used internally only for rotations (rx, ry and rz)
 """
 %feature("docstring") Kernel::gate
 """ adds custom/default gates to kernel.
@@ -1100,21 +1129,21 @@ arg1 : int
     type of the parameter
 """
 
-// %feature("docstring") Param::type
-// """ Returns parameter type
+%feature("docstring") Param::set_value
+""" Parameter value 
+Parameters
+----------
+arg1 : double
+    type of the parameter
+"""
 
-// Parameters
-// ----------
-// None
-
-// Returns
-// -------
-// enum    
-// """
-
-// %feature("docstring") Param::name
-// """ Returns parameter name """
-
+%feature("docstring") Param::set_value
+""" Parameter value 
+Parameters
+----------
+arg1 : complex
+    type of the parameter
+"""
 
 // Include the header file with above prototypes
 %include "openql_i.h"

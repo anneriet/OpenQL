@@ -45,12 +45,26 @@ void quantum_compiler::compile(quantum_program *program) {
  */
 void quantum_compiler::compile(quantum_program* program, std::vector<cparam*> paramlst, std::vector<std::complex<double>> valuelst)
 {
-    QL_DOUT("Compiler compiles program with parameters (ONLY INT)");
+    QL_DOUT("Compiler compiles program with parameters");
     int i = 0;
     for (auto it = begin (valuelst); it != end (valuelst); ++it) {
-        paramlst[i]->int_value = int(it->real());
+        switch(paramlst[i]->type())
+        {
+            case ql::parameter_type_t::PINT:
+                paramlst[i]->int_value = int(it->real());
+                break;
+            case ql::parameter_type_t::PREAL:
+                paramlst[i]->real_value = it->real();
+                break;
+            case ql::parameter_type_t::PCOMPLEX:
+                paramlst[i]->complex_value = *it;
+                break;
+            default:
+                QL_EOUT("Parameter of unknown type: " << int(paramlst[i]->type()));
+                return;
+        }
         paramlst[i]->assigned = true;
-        QL_DOUT("Parameter " << paramlst[i]->name << " has value " << paramlst[i]->int_value);
+        QL_DOUT("Parameter " << paramlst[i]->name << " has value " << *it);
         i++;
     }
     if(paramlst[i-1]->name != paramlst.back()->name){QL_EOUT("List of parameters and list of values are not the same length.");}

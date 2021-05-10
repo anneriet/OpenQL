@@ -201,6 +201,20 @@ public:
         cond_type_t gcond = cond_always,
         const utils::Vec<utils::UInt> &gcondregs = {}
     );
+    void gate(const utils::Str &gname, ql::cparam * q0, 
+        ql::cparam * q1 = nullptr, 
+        const utils::Vec<utils::UInt> &cregs = {},
+        utils::UInt duration = 0,
+        ql::cparam * angleparam = nullptr,
+        const utils::Vec<utils::UInt> &bregs = {},
+        cond_type_t gcond = cond_always,
+        const utils::Vec<utils::UInt> &gcondregs = {}
+    );    
+    void gate(
+        const utils::Str &gname,
+        const utils::Vec<utils::UInt> &qubits,
+        ql::cparam * angleparam
+    );
 
 
     // terminology:
