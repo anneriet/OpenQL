@@ -795,31 +795,103 @@ parameterized_gate::parameterized_gate(const utils::Str &name, cparam *q0)  : cu
 
 parameterized_gate::parameterized_gate(const utils::Str &name, cparam *q0, cparam *q1)  : custom_gate(name), q0(q0), q1(q1)
 {
-    QL_DOUT("Parameterized gate initialized with q0: " << q0->name << " and q1: " << q1->name);
+     QL_DOUT("Parameterized gate initialized as: " << name);
     duration = 0;
 }
+
+
 instruction_t parameterized_gate::qasm() const
 {
-    if(q0 == nullptr) QL_FATAL("Parameterized gate without parameters, q0 is nullptr!");
-    if(q0->assigned)
+    if(q0 == nullptr && q1 == nullptr) QL_FATAL("parameterized_gate.qasm(): Parameterized gate without parameters, q0 & q1 are both nullptrs!");
+    QL_DOUT("parameterized_gate.qasm(): " << name);
+    custom_gate* tmp = new custom_gate(name); // Needed to deal with const objects
+    StrStrm qasmline;
+    qasmline << name;
+    if(q0 != nullptr) // There is a 1st parameter
     {
-        QL_DOUT("Parameterized gate with q0 assigned");
-        custom_gate* tmp = new custom_gate(name);
-        tmp->operands = {q0->int_value};
-        if(q1 == nullptr) return tmp->qasm(); // one qubit gate
-        if(q1->assigned)
+        QL_DOUT("parameterized_gate.qasm(): q0 " << q0->name);
+        qasmline << " %" << q0->name;
+        if(q0->assigned)
         {
-            QL_DOUT("Parameterized gate with q0 and q1 assigned: values are " << q0->int_value << " and " << q1->int_value);
-            tmp->operands.push_back(q1->int_value); // both values assigned
-            return tmp->qasm();
+            QL_DOUT("Parameterized gate with q0 assigned");
+            tmp->operands = {q0->int_value};
+            if(q1 == nullptr) return tmp->qasm(); 
         }
     }
-    // keep parameters otherwise
-    StrStrm qasmline;
-    qasmline << name << " %" << q0->name;     
-    if(q1 != nullptr) qasmline << " %" << q1->name; // two qubit gate
+    else // no first parameter means it is a parameterized angle gate:
+    {
+        tmp->operands = operands;
+        qasmline << operands.to_string();
+    }
+    
+    if(q1 == nullptr) return qasmline.str();
+    // otherwise, handle the second parameter
+    qasmline << " %" << q1->name;
+    if(q1->assigned && (q0 == nullptr || q0->assigned))
+    {
+        QL_DOUT("parameterized_gate.qasm(): q1 assigned: " << name << " " << operands.to_string() << " " << q1->name);
+        switch(q1->type())
+        {
+        case ql::parameter_type_t::PINT:
+            tmp->operands.push_back(q1->int_value);
+            return tmp->qasm();
+        case ql::parameter_type_t::PREAL:
+            tmp->angle = q1->real_value;
+            return tmp->qasm(); 
+        case ql::parameter_type_t::PCOMPLEX:
+            QL_EOUT("parameterized_gate.qasm(): Complex parameters not implemented.");
+            break;
+        default:
+            QL_EOUT("parameterized_gate.qasm(): Parameter of unknown type " << q1->typeStr);
+        }
+    }
     QL_DOUT("parameterized_gate.qasm(): " << qasmline.str());
     return qasmline.str();     
+
+
+
+    //     if(q1->assigned)
+    //     {
+    //         QL_DOUT("Parameterized gate with q0 and q1 assigned: values are " << q0->int_value << " and " << q1->int_value);
+    //         tmp->operands.push_back(q1->int_value); // both values assigned
+    //         return tmp->qasm();
+    //     }
+
+    // }
+    // // else: q0 does not exist or is not assigned
+    // if(q1!= nullptr && q1->assigned) // only 2nd parameter assigned
+    // {
+    //     QL_DOUT("parameterized_gate.qasm(): Only q1 assigned: " << name << " " << operands.to_string() << " " << q1->name);
+    //     tmp->operands = operands; // This is the passed qubit number
+    //     switch(q1->type())
+    //     {
+    //     case ql::parameter_type_t::PINT:
+    //         tmp->operands.push_back(q1->int_value);
+    //         break;
+    //     case ql::parameter_type_t::PREAL:
+    //         tmp->angle = q1->real_value;
+    //         break;
+    //     case ql::parameter_type_t::PCOMPLEX:
+    //         QL_EOUT("parameterized_gate.qasm(): Complex parameters not implemented.");
+    //         break;
+    //     default:
+    //         QL_EOUT("parameterized_gate.qasm(): Parameter of unknown type " << q1->typeStr);
+    //     }
+    //     return tmp->qasm(); 
+    // } //else: either q0 or q1 does not exist or is not assigned
+    
+    // // // keep parameters otherwise
+    // // StrStrm qasmline;
+    // // qasmline << name << " ";
+    // if(q0 != nullptr)
+    // {
+    //     qasmline << "%" << q0->name;
+    // } else {
+    //     qasmline << operands.to_string();
+    // }
+    // if(q1 != nullptr) qasmline << "%" << q1->name; // two qubit gate or angle param (don't care at this point)
+    // QL_DOUT("parameterized_gate.qasm(): " << qasmline.str());
+    // return qasmline.str();     
 }
 
 gate_type_t parameterized_gate::type() const{
