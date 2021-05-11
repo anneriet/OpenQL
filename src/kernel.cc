@@ -1171,20 +1171,20 @@ void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam *
             {
             case ql::parameter_type_t::PINT: // two qubit gate as usual
                 lqubits.push_back(q1->int_value);
-                QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+                QL_DOUT("Two qubit parameterized gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
                 gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
-                break;
+                return;
             case ql::parameter_type_t::PREAL:
                 QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << q1->real_value <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
                 gate(gname, lqubits, lcregs, duration, q1->real_value, lbregs, gcond, gcondregs);
-                break;
+                return;
             default:
                 QL_FATAL("Wrong/unknown type for parameter 1 for gate " << gname << "! Type is " << q1->typeStr);
             }
         }
         else if (q1 == nullptr) // Regular one qubit gate, q0 is assigned and q1 is a nullptr
         {
-            QL_DOUT("gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
+            QL_DOUT("One qubit parameterized gate:" <<" gname=" << gname <<" qubits=" << lqubits <<" cregs=" << cregs <<" duration=" << duration <<" angle=" << angle <<" bregs=" << bregs <<" gcond=" << gcond <<" gcondregs=" << gcondregs);
             gate(gname, lqubits, lcregs, duration, angle, lbregs, gcond, gcondregs);
             return;
         }
@@ -1212,7 +1212,14 @@ void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam *
     } else {
         QL_DOUT("Parameterized 2 qubit gate:" <<" gname=" << gname <<" param1=" << q0->name << " type=" << q0->typeStr << " param2=" << q1->name << " type=" << q1->typeStr); 
         if(q1->assigned){
+            if(q1->type() == ql::parameter_type_t::PREAL)
+            {
+                qasmline << " " << q1->real_value;
+            }
+            else
+            {            
             qasmline << " " << q1->int_value;
+            }
         } else{
             qasmline << " %" << q1->name;
         }
