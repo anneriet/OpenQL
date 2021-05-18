@@ -804,7 +804,7 @@ instruction_t parameterized_gate::qasm() const
 {
     if(q0 == nullptr && q1 == nullptr) QL_FATAL("parameterized_gate.qasm(): Parameterized gate without parameters, q0 & q1 are both nullptrs!");
     QL_DOUT("parameterized_gate.qasm(): " << name);
-    custom_gate* tmp = new custom_gate(name); // Needed to deal with const objects
+    custom_gate* tmp = new custom_gate(to_lower(name)); // Needed to deal with const objects
     StrStrm qasmline;
     qasmline << name;
     if(q0 == nullptr) // no first parameter means it is a parameterized angle gate:
@@ -839,10 +839,12 @@ instruction_t parameterized_gate::qasm() const
         case ql::parameter_type_t::PINT:
             tmp->operands.push_back(q1->int_value);
             qasmline << ",q[" << q1->int_value << "]";
+            QL_DOUT("parameterized_gate.qasm(): q1 assigned: " << name << " " << operands.to_string() << " " << q1->name << " value(int): " << q1->int_value);
             break;
         case ql::parameter_type_t::PREAL:
             tmp->angle = q1->real_value;
             qasmline << ", " << q1->real_value;
+            QL_DOUT("parameterized_gate.qasm(): q1 assigned: " << name << " " << operands.to_string() << " " << q1->name << " value(real): " << q1->real_value);
             break;
         case ql::parameter_type_t::PCOMPLEX:
             QL_EOUT("parameterized_gate.qasm(): Complex parameters not implemented.");

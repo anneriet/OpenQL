@@ -780,7 +780,6 @@ Param::Param(const std::string &typeStr, std::complex<double> value): typeStr(ty
     }
 void Param::set_value(int val)
     {
-        QL_DOUT("Param of value: "<< val);
         switch(param->type())
         {
             case ql::parameter_type_t::PINT:
@@ -797,10 +796,10 @@ void Param::set_value(int val)
                 return;
         }
         param->assigned = true;
+        QL_DOUT("Param " << param->name << " now has value: "<< val);
     };
 void Param::set_value(double val)
     {
-        QL_DOUT("Param of value: "<< val);
         switch(param->type())
         {
             case ql::parameter_type_t::PREAL:
@@ -814,11 +813,11 @@ void Param::set_value(double val)
                 return;
         }
         param->assigned = true;
+        QL_DOUT("Param " << param->name << " now has value: "<< val);
     };
 
 void Param::set_value(std::complex<double> val)
     {
-        QL_DOUT("Param of value: "<< val);
         switch(param->type())
         {
             case ql::parameter_type_t::PCOMPLEX:
@@ -829,6 +828,7 @@ void Param::set_value(std::complex<double> val)
                 return;
         }
         param->assigned = true;
+        QL_DOUT("Param " << param->name << " now has value: "<< val);
     };
 
 ql::cparam* Param::get_param() const{
