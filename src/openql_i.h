@@ -81,12 +81,10 @@ public:
     Param(const std::string &typeStr, double value);
     Param(const std::string &typeStr, std::complex<double> value);
 
-    std::string name;
     std::string typeStr;
-    int bool_value;
-    size_t int_value;
-    double real_value;  
+    std::string name;
 
+    std::complex<double> value;
     // parameter_type_t type();
     void qasm();
 
@@ -94,6 +92,13 @@ public:
     void set_value(double val); 
     void set_value(std::complex<double> val); 
     ~Param();
+private:
+    int bool_value;
+    size_t int_value;
+    double real_value;  
+
+    std::complex<double> complex_value;
+
 };
 
 

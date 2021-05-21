@@ -32,12 +32,14 @@ public:
     cparam(const utils::Str typeStr, const utils::Complex value);
     utils::Str typeStr;
     utils::Str name;
+    utils::Complex value; 
     utils::Bool assigned = false;
 
     utils::Int bool_value;
     utils::UInt int_value;
     utils::Real real_value; 
     utils::Complex complex_value; 
+
 
     parameter_type_t type();
     utils::Str qasm() const;

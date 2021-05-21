@@ -26,11 +26,8 @@ cparam::cparam(const utils::Str typeStr, const utils::Str name)  : typeStr(typeS
     set_type(typeStr);
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name);
 }
-// cparam::cparam(utils::Str typeStr, utils::Str name, utils::UInt value){
-//     typeStr_ = typeStr;
-//     name = name;
-// }
-cparam::cparam(const utils::Str typeStr, const utils::Str name, const utils::Real value) : typeStr(typeStr) , name(name), assigned(true){
+
+cparam::cparam(const utils::Str typeStr, const utils::Str name, const utils::Real value) : typeStr(typeStr), name(name), value(value), assigned(true){
     set_type(typeStr);
     if(type_ == parameter_type_t::PINT)
     {
@@ -42,19 +39,17 @@ cparam::cparam(const utils::Str typeStr, const utils::Str name, const utils::Rea
     }
     else
     {
-        assigned = false;
-        QL_FATAL("Parameter type string and value mismatch (int or real)");
+        complex_value = value;
     }
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name << " value: " << value);
 }
 
-cparam::cparam(const utils::Str typeStr, const utils::Str name, const utils::Complex value) : typeStr(typeStr) , name(name), assigned(true){
-    if(set_type(typeStr) != parameter_type_t::PCOMPLEX) QL_FATAL("Parameter type string and value mismatch (complex)");
+cparam::cparam(const utils::Str typeStr, const utils::Str name, const utils::Complex value) : typeStr(typeStr) , name(name), value(value), assigned(true){
     complex_value = value;
     QL_DOUT("Param of typeStr: "<< typeStr<< " name: " << name << " value: " << value);
 }
 
-cparam::cparam(const utils::Str typeStr, const utils::Real value) : typeStr(typeStr), assigned(true){
+cparam::cparam(const utils::Str typeStr, const utils::Real value) : typeStr(typeStr), value(value), assigned(true){
     set_type(typeStr);
     if(type_ == parameter_type_t::PINT)
     {
@@ -66,14 +61,12 @@ cparam::cparam(const utils::Str typeStr, const utils::Real value) : typeStr(type
     }
     else
     {
-        assigned = false;
-        QL_FATAL("Parameter type string and value mismatch (int or real)");
-    }
+        complex_value = value;
+        }
     name = paramnamerand();    
     QL_DOUT("Param of type: "<< typeStr << ", name: " << name << " and with value: " << value);
 }
-cparam::cparam(const utils::Str typeStr, const utils::Complex value) : typeStr(typeStr), assigned(true){
-    if(set_type(typeStr) != parameter_type_t::PCOMPLEX) QL_FATAL("Parameter type string and value mismatch (complex)");
+cparam::cparam(const utils::Str typeStr, const utils::Complex value) : typeStr(typeStr), value(value), assigned(true){
     complex_value = value;
     name = paramnamerand();
     QL_DOUT("Param of typeStr: "<< typeStr<< " (complex) name: " << name << " value: " << value);

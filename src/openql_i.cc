@@ -737,6 +737,7 @@ Param::Param() : typeStr(""){};
 Param::Param(const std::string &typeStr) : typeStr(typeStr){
         QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr);
+        name = param->name;
     }
 
 Param::Param(const std::string &typeStr, const std::string &name) : typeStr(typeStr), name(name){
@@ -766,20 +767,24 @@ Param::Param(const std::string &typeStr, int value): typeStr(typeStr){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, value);
         set_value(value);
+        name = param->name;
     }
     
 Param::Param(const std::string &typeStr, double value): typeStr(typeStr){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, value);
         set_value(value);
+        name = param->name;
     }
 Param::Param(const std::string &typeStr, std::complex<double> value): typeStr(typeStr){
     QL_DOUT("Param of typeStr: "<< typeStr<< " initialized");
         param = new ql::cparam(typeStr, value);
         set_value(value);
+        name = param->name;
     }
 void Param::set_value(int val)
     {
+        value = val;
         switch(param->type())
         {
             case ql::parameter_type_t::PINT:
@@ -800,8 +805,12 @@ void Param::set_value(int val)
     };
 void Param::set_value(double val)
     {
+        value = val;
         switch(param->type())
         {
+            case ql::parameter_type_t::PINT:
+                param->int_value = (int) val;
+                break;
             case ql::parameter_type_t::PREAL:
                 param->real_value = val;
                 break;
@@ -818,8 +827,15 @@ void Param::set_value(double val)
 
 void Param::set_value(std::complex<double> val)
     {
+        value = val;
         switch(param->type())
         {
+            case ql::parameter_type_t::PINT:
+                param->int_value = (int) val.real();
+                break;
+            case ql::parameter_type_t::PREAL:
+                param->real_value = val.real();
+                break;
             case ql::parameter_type_t::PCOMPLEX:
                 param->complex_value = val;
                 break;
