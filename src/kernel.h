@@ -213,7 +213,12 @@ public:
     void gate(
         const utils::Str &gname,
         const utils::Vec<utils::UInt> &qubits,
-        ql::cparam * angleparam
+        const utils::Vec<utils::UInt> &cregs,
+        utils::UInt duration,
+        ql::cparam * angleparam,
+        const utils::Vec<utils::UInt> &bregs = {},
+        cond_type_t gcond = cond_always,
+        const utils::Vec<utils::UInt> &gcondregs = {}
     );
 
 

@@ -1202,12 +1202,18 @@ void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam *
     if(q1 == nullptr){
         QL_DOUT("Parameterized 1 qubit gate:" <<" gname=" << gname <<" param1=" << q0->name << " type=" << q0->typeStr); 
         parameterized_gate *g = new ql::parameterized_gate(gname, q0);
-        // g->cregs = cregs;
-        g->duration = duration;
+        for (auto &cop : cregs) {
+            g->creg_operands.push_back(cop);
+        }
+        for (auto &bop : bregs) {
+            g->breg_operands.push_back(bop);
+        }
+        if (duration > 0) {
+            g->duration = duration;
+        }
         g->angle = angle;
-        // g->bregs = bregs;
-        // g->gcond = gcond;
-        // g->gcondregs = gcondregs;
+        g->condition = gcond;
+        g->cond_operands = gcondregs;
         c.push_back(g);
     } else {
         QL_DOUT("Parameterized 2 qubit gate:" <<" gname=" << gname <<" param1=" << q0->name << " type=" << q0->typeStr << " param2=" << q1->name << " type=" << q1->typeStr); 
@@ -1224,12 +1230,18 @@ void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam *
             qasmline << " %" << q1->name;
         }
         parameterized_gate *g = new ql::parameterized_gate(gname, q0, q1);
-        // g->cregs = cregs;
-        g->duration = duration;
+        for (auto &cop : cregs) {
+            g->creg_operands.push_back(cop);
+        }
+        for (auto &bop : bregs) {
+            g->breg_operands.push_back(bop);
+        }
+        if (duration > 0) {
+            g->duration = duration;
+        }
         g->angle = angle;
-        // g->bregs = bregs;
-        // g->gcond = gcond;
-        // g->gcondregs = gcondregs;
+        g->condition = gcond;
+        g->cond_operands = gcondregs;
         c.push_back(g);
     }
     QL_DOUT("Parameterized gate: " << qasmline.str());
@@ -1243,19 +1255,49 @@ void quantum_kernel::gate(const utils::Str &gname, ql::cparam * q0, ql::cparam *
         cond_type_t gcond,
         const utils::Vec<utils::UInt> &gcondregs)
 {
-    c.push_back(new ql::parameterized_gate(gname, q0, q1));
+    parameterized_gate *g = new ql::parameterized_gate(gname, q0, q1);
+    for (auto &cop : cregs) {
+        g->creg_operands.push_back(cop);
+    }
+    for (auto &bop : bregs) {
+        g->breg_operands.push_back(bop);
+    }
+    if (duration > 0) {
+        g->duration = duration;
+    }
+    g->condition = gcond;
+    g->cond_operands = gcondregs;
+    g->creg_operands = cregs;
+
+    c.push_back(g);
 }
 
 void quantum_kernel::gate(
     const Str &gname,
-    const Vec<UInt> &qubits,
-    ql::cparam * angleparam
+    const Vec<UInt> &qubits,    
+    const utils::Vec<utils::UInt> &cregs,
+    utils::UInt duration,
+    ql::cparam * angleparam,   
+    const utils::Vec<utils::UInt> &bregs,
+    cond_type_t gcond,
+    const utils::Vec<utils::UInt> &gcondregs
 ) {
     QL_DOUT("Parameterized gate:" <<" gname=" << gname << " qubits= " << qubits.to_string() << " param=" << angleparam->name << " type=" << angleparam->typeStr); 
     parameterized_gate *g = new ql::parameterized_gate(gname, nullptr, angleparam);
     for (auto qubit : qubits) {
             g->operands.push_back(qubit);
         }
+            for (auto &cop : cregs) {
+        g->creg_operands.push_back(cop);
+    }
+    for (auto &bop : bregs) {
+        g->breg_operands.push_back(bop);
+    }
+    if (duration > 0) {
+        g->duration = duration;
+    }
+    g->condition = gcond;
+    g->cond_operands = gcondregs;
     c.push_back(g);
 }
 

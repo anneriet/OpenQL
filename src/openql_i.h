@@ -208,20 +208,23 @@ public:
     );
 
     void gate(
-    const std::string &name,
-    const Param &p0,
-    const Param &p1,
-    size_t duration,
-    const Param &angleparam,
-    const std::vector<size_t> &bregs,
-    const std::string &condstring,
-    const std::vector<size_t> &condregs
+        const std::string &name,
+        const Param &p0,
+        size_t duration,
+        const Param &angleparam,
+        const std::vector<size_t> &bregs = {},
+        const std::string &condstring = "COND_ALWAYS",
+        const std::vector<size_t> &condregs = {}
     );
 
     void gate(
         const std::string &name,
         const std::vector<size_t> &qubits,
-        const Param &angleparam
+        size_t duration,
+        const Param &angleparam,
+        const std::vector<size_t> &bregs = {},
+        const std::string &condstring = "COND_ALWAYS",
+        const std::vector<size_t> &condregs = {}
     );
     ~Kernel();
 };

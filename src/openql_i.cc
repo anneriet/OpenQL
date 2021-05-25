@@ -471,7 +471,6 @@ void Kernel::gate(
 void Kernel::gate(
     const std::string &name,
     const Param &p0,
-    const Param &p1,
     size_t duration,
     const Param &angleparam,
     const std::vector<size_t> &bregs,
@@ -483,8 +482,6 @@ void Kernel::gate(
         << name
         << ", "
         << p0.name
-        << ", "
-        << p1.name
         << ", "
         << duration
         << ", "
@@ -502,7 +499,7 @@ void Kernel::gate(
     kernel->gate(
         name,
         p0.get_param(),
-        p1.get_param(),
+        nullptr,
         {},
         duration,
         angleparam.get_param(),
@@ -515,23 +512,39 @@ void Kernel::gate(
 void Kernel::gate(
     const std::string &name,
     const std::vector<size_t> &qubits,
-    const Param &angleparam
+    size_t duration,
+    const Param &angleparam,
+    const std::vector<size_t> &bregs,
+    const std::string &condstring,
+    const std::vector<size_t> &condregs
     )
     {
-    QL_DOUT(
-        "Python k.gate("
+    QL_DOUT("Python k.gate("
         << name
         << ", "
         << ql::utils::Vec<size_t>(qubits.begin(), qubits.end())
         << ", "
+        << duration
+        << ", "
         << angleparam.name
+        << ", "
+        << ql::utils::Vec<size_t>(bregs.begin(), bregs.end())
+        << ", "
+        << condstring
+        << ", "
+        << ql::utils::Vec<size_t>(condregs.begin(), condregs.end())
         << ")"
     );
-
+    ql::cond_type_t condvalue = kernel->condstr2condvalue(condstring);
     kernel->gate(
         name,
         {qubits.begin(), qubits.end()},
-        angleparam.get_param()
+        {},
+        duration,
+        angleparam.get_param(),
+        {bregs.begin(), bregs.end()},
+        condvalue,
+        {condregs.begin(), condregs.end()}
     );
 }
 
