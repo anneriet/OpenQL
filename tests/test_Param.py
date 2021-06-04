@@ -63,7 +63,7 @@ class Test_Param(unittest.TestCase):
 
     
     # All allowed type names for Param creation
-    # Verify name is passed on
+    # Verify that name is passed on
     def test_param_name(self):
         for typeStr in TypeStrList:
             with self.subTest(typeStr=typeStr):
@@ -78,7 +78,7 @@ class Test_Param(unittest.TestCase):
                 self.assertNotEqual(param.name, "")
 
     # All allowed type names for Param creation
-    # Verify value is set
+    # Verify that value is set
     def test_param_value_int(self):
         for typeStr in TypeStrList:
             with self.subTest(typeStr=typeStr):
@@ -89,7 +89,7 @@ class Test_Param(unittest.TestCase):
                 self.assertEqual(param.value, value)
 
     def test_param_real_val(self):
-        typeStr = "REAL"
+        typeStr = "REAL" 
         name = "p1"
         value = 2.5
         param = ql.Param(typeStr, name, value)
@@ -184,7 +184,7 @@ class Test_Param(unittest.TestCase):
         p2.add_kernel(k2)
 
         c.compile(p, [param], [value])
-        c.compile(p2)
+        c.compile(p2) 
 
         PARAM_fn = os.path.join(output_dir, p.name + '.qasm')
         GOLD_fn = os.path.join(output_dir, p2.name + '.qasm')
@@ -223,7 +223,8 @@ class Test_Param(unittest.TestCase):
         typeStr = "REAL"
         value2 = 3.1415
         param2 = ql.Param(typeStr)
-
+        pint = ql.Param("INT")
+        preal = ql.Param("REAL")
         k.gate("rz", param, 0, param2)
         k2.gate("rz", [value], 0, value2)
         
